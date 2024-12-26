@@ -1,0 +1,86 @@
+.THIS {
+}
+
+.THIS .slds-card__header {
+    display: none;
+}
+
+.THIS .custom-loading-text {
+    transform: rotate(-90deg);
+    position: absolute;
+    top: -0.5rem;
+    left: 1rem;
+    white-space: nowrap;
+    font-size: 20px;
+}
+
+.THIS .truncate-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 17rem;
+}
+
+.THIS .slds-card__body{
+    margin-top: 0;
+}
+
+.THIS .slds-tabs_default__item.slds-is-active {
+    border-bottom-color: #0070d2 !important; /* Active tab bottom border */
+    color: #0070d2 !important; /* Active tab text color */
+    font-size: 0.815rem !important; /* Active tab text size */
+}
+
+.THIS .slds-tabs_default__item.slds-is-active .slds-tabs_default__link {
+    font-weight: 0 !important;
+}
+
+.THIS .header-container {
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    font-size: 20px;
+    padding: 20px;
+    color: white;
+    background-color: #0070d2;
+}
+
+.THIS th {
+    background-color: rgb(6, 120, 255, 33) !important;
+    color: #fff !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 0.75rem 1rem !important;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    height: 2rem;
+}
+
+.THIS .tab-container {
+    padding: 1rem;
+    min-height: 72vh;
+    overflow: auto; /* Allow scrolling if content overflows */
+}
+
+.THIS .footer-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-top: 2px solid #ddd; /* Vertical line separating footer */
+    background-color: #f9f9f9;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.THIS .footer-left,
+.THIS .footer-right {
+    display: flex;
+    gap: 10px;
+}
+
+.THIS lightning-file-upload .slds-form-element {
+    width: max-content !important;
+}

@@ -1,0 +1,67 @@
+<aura:component controller="BTCloneProject" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader" access="global">
+    <aura:attribute name="options" type="List" default="[
+                                                            {'label': 'Budget', 'value': 'Budget'},
+                                                            {'label': 'Inspections', 'value': 'Inspections'},
+                                                            {'label': 'Quote', 'value': 'Quote'},
+                                                            {'label': 'Punch List', 'value': 'PunchList'},
+                                                            {'label': 'Project Vendors', 'value': 'Project Vendors'},
+                                                            ]"/>
+                                                            <!-- {'label': 'Contract', 'value': 'Contract'}, -->
+                                                            <!-- {'label': 'Warranty', 'value': 'Warranty'}, -->
+                                                            <!-- {'label': 'Purchase Order', 'value': 'Purchase Order'}, -->
+                                                            <!-- {'label': 'Selection', 'value': 'Selection'}, -->
+                                                            <!-- {'label': 'Schedule', 'value': 'Schedule'}, -->
+    <aura:attribute name="value" type="List" default=""/>
+    <aura:attribute name="recordId" type="Id" />
+    <aura:attribute name="projects" type="List" default=""/>
+
+    <aura:handler name="init" value="{! this }" action="{! c.doInit }"/>
+
+    <ltng:require styles="{!$Resource.ModalPreviewCSS}" />
+    <aura:html tag="style">
+        .slds-modal__container .createCloneProject{
+            min-width: 75% !important;
+            max-width: 100% !important;
+        }
+
+        .slds-modal__container {
+            width:50% !important;
+            max-width: 50% !important;
+        }
+        .cuf-content {
+            padding: 0 0rem !important;
+        }
+        .slds-p-around--medium {
+            padding: 0rem !important;
+        }
+        .rkDiv{
+            padding: 20px;
+            border: 1px solid #bcbcbc;
+            margin: 10px;
+            border-radius: 5px;
+        }
+        
+    </aura:html>
+
+    <div class="slds-modal__content ">
+        <div class="slds slds-scope">
+            <header class="slds-modal__header">
+                <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Clone Project</h2>
+            </header>
+            <div style="height: auto;overflow-y: auto;">
+            <div class="rkDiv">
+                <h3 id="modal-heading-01" class="slds-hyphenate"><b>Select items to be cloned</b></h3>
+                <lightning:checkboxGroup name="Checkbox Group"
+                             label=""
+                             options="{! v.options }"
+                             value="{! v.value }"
+                             onchange="{! c.handleChange }"/>
+            </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer slds-modal__footer slds-size_1-of-1">
+        <lightning:button variant="brand" label="Clone Project" title="Clone Project" onclick="{! c.handleClick }" />
+        <lightning:button variant="brand" label="Cancel" title="Cancel" onclick="{! c.closeModel }" />
+    </div>
+</aura:component>

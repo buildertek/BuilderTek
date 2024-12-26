@@ -1,0 +1,152 @@
+<apex:page showQuickActionVfHeader="false" Controller="Preview_Checklist_Answer_Controller" applyHtmlTag="false" showHeader="false" cache="false">
+    <html>
+
+    <head>
+        <style>
+
+            .pdf-container {
+                width: 80%;
+                margin: auto;
+            }
+
+            .section {
+                border: 1px solid #ccc;
+                margin-bottom: 20px;
+                padding: 15px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                background-color: #f9f9f9;
+            }
+
+            .section-head {
+                margin-bottom: 15px;
+                font-size: 1.8em;
+                background-color: #0176d1;
+                color: white;
+                padding: 15px;
+                font-weight: bold;
+                border-radius: 8px 8px 0 0;
+                cursor: pointer;
+            }
+
+            .sub-section {
+                margin-bottom: 20px;
+                padding-left: 20px;
+            }
+
+            .sub-section-head {
+                margin-bottom: 10px;
+                font-size: 1.5em;
+                color: #666;
+            }
+
+            .question-card {
+                background-color: #fff;
+                border: 1px solid #ddd;
+                padding: 15px;
+                margin-bottom: 10px;
+                border-radius: 6px;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            }
+
+            .question-card p {
+                margin: 5px 0;
+                color: #555;
+                font-size: 1em;
+            }
+
+            .question-card strong {
+                color: #333;
+            }
+        </style>
+        <apex:includeScript value="{!URLFOR($Resource.html2pdf)}" />
+    </head>
+
+    <body>
+        <div class="pdf-container">
+            <apex:repeat var="item" value="{!data1}">
+                <div class="section">
+                    <div class="section-head">
+                        <h2>{!item.sectionName}</h2>
+                    </div>
+
+                    <apex:repeat var="section" value="{!item.subSections}">
+                        <div class="sub-section">
+                            <div class="sub-section-head">
+                                <h3>{!section.subSectionName}</h3>
+                            </div>
+                            <apex:repeat var="question" value="{!section.data}">
+                                <div class="question-card">
+                                    <p>
+                                        <strong>Question {!question.count}:</strong>
+                                        {!question.Question}
+                                    </p>
+                                    <p><strong>Answer:</strong> {!question.Answer}</p>
+                                </div>
+                            </apex:repeat>
+                        </div>
+                    </apex:repeat>
+                </div>
+            </apex:repeat>
+        </div>
+        <div>
+            <apex:form >
+                <!-- <apex:actionFunction action="{!findState}" name="callApex" rerender="stateId">  
+                    <apex:param name="firstParam" assignTo="{!state}" value="" />  
+                </apex:actionFunction> -->
+            </apex:form>
+        </div>
+    </body>
+    <script type="text/javascript">
+        window.onload = function() {
+            console.log("{!listOfIntegers}");
+    
+            const node = document.querySelector(".pdf-container");
+    
+            const opt = {
+                margin: [32, 24, 24, 32], // margin: [top, left, bottom, right]
+                filename: "fileName" + ".pdf",
+                image: { type: "jpeg", quality: 1 },
+                html2canvas: { scale: 3, useCORS: true, letterRendering: true },
+                pagebreak: { mode: ["avoid-all", "css", "legacy"] },
+                jsPDF: {
+                    unit: "px",
+                    format: "a4",
+                    orientation: "p",
+                    hotfixes: ["px_scaling"],
+                },
+            };
+    
+            //html2pdf().set(opt).from(node).outputPdf().save();
+            html2pdf().set(opt).from(node).outputPdf().then(function (rawPDF) {
+                const pdfBlob = new Blob([getArrayBuffer(rawPDF)], { type: 'application/pdf' });
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const fileData = reader.result.split(',')[1];
+                    let downloadUrl = reader.result;
+                    console.log(
+                        'pdfBlob : ', pdfBlob,
+                        'fileData : ', fileData,
+                        'downloadUrl : ', downloadUrl
+                    );
+                    window.parent.postMessage({ type: 'pdfData', data: fileData }, '*');
+                }
+                reader.readAsDataURL(pdfBlob);
+            })
+            .catch(function (error) {
+                console.log('Error generating PDF file: ', error.stack);
+            });
+    
+            function getArrayBuffer(data) {
+                let len = data.length,
+                    ab = new ArrayBuffer(len),
+                    u8 = new Uint8Array(ab);
+    
+                while (len--) u8[len] = data.charCodeAt(len);
+                return ab;
+            }
+        }
+    </script>    
+
+    </html>
+</apex:page>

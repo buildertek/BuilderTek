@@ -1,0 +1,88 @@
+<template>
+    <template if:true={isLoading}>
+        <div class="spinner-container">
+            <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+        </div>
+    </template>
+
+    <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+            aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container slds-modal__container_custom">
+                <div class="c-container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close custom-close-button" title="Close" onclick={closeAddCM}>
+                            <lightning-icon icon-name="utility:close" alternative-text="close" size="small"
+                                class="custom-close-icon" ></lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 class="slds-text-heading_medium slds-hyphenate">Credit Memos</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium content-scrollable">
+                        <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col" class="slds-truncate">
+                                        <lightning-input type="checkbox" name="checkAll" onchange={checkAllCreditMemo} checked={allSelected}>
+                                        </lightning-input>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate">Memo#</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate">Memo Name</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate">Memo Date</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate">Memo Amount</div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={cmRecordList} for:item="item" for:index="index">
+                                    <tr key={item.Id}>
+                                        <td>
+                                            <lightning-input type="checkbox" checked={item.Selected} data-id={item.Id}
+                                            onchange={checkCreditMemo}></lightning-input>
+                                        </td>
+                                        <td class="slds-truncate cm-field-data">
+                                            {item.orderNumber}
+                                        </td>
+                                        <td class="slds-truncate cm-field-data">
+                                            {item.Name}
+                                        </td>
+                                        <td class="slds-truncate cm-field-data">
+                                            <lightning-formatted-date-time value={item.buildertek__Credit_Memo_Date__c} 
+                                                day="2-digit" month="2-digit" year="numeric" time-zone="UTC">
+                                            </lightning-formatted-date-time>
+                                        </td>
+                                        <td>
+                                            <lightning-formatted-number value={item.buildertek__Amount__c}
+                                                format-style="currency" currency-code={currencycode} currency-display-as="code">
+                                            </lightning-formatted-number>
+                                        </td>
+                                    </tr>
+                                </template>
+                                <template if:true={showEmptyState}>
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; line-height: 10rem; font-size: 18px;">
+                                            No Records Found
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+    
+                    <footer class="slds-modal__footer modal-footer">
+                        <lightning-button variant="neutral" label="Cancel" onclick={closeAddCM}>
+                        </lightning-button>
+                        <lightning-button variant="brand" label="Save" onclick={UpdateCM}>
+                        </lightning-button>
+                    </footer>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+</template>

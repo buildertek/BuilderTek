@@ -1,0 +1,57 @@
+<aura:component controller="CreateBudgetController"
+	implements="flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader,lightning:actionOverride"
+	access="global">
+	<aura:attribute name="recordId" type="Id" />
+	<aura:attribute name="budgetType" type="String" default="Detailed" />
+	<aura:attribute name="groupBudgetType" type="String" default="Vendor" />
+
+	<aura:html tag="style">
+		.slds-modal__container {
+		max-width: 52rem !important;
+		width: 52% !important;
+		}
+
+		.cuf-content {
+		padding: 0 0rem !important;
+		}
+
+		.slds-p-around--medium {
+		padding: 0rem !important;
+		}
+
+		.slds-modal__content {
+		height: unset !important;
+		max-height: unset !important;
+		box-shadow: none !important;
+		}
+	</aura:html>
+
+	<div class="slds-modal__header" style="font-size:17px;">
+		Create Budget
+	</div>
+	<div class="slds-modal__content slds-p-around--large">
+		<div class="slds slds-scope">
+			<lightning:select aura:id="budgetType" label="Budget Type" value="{!v.budgetType}">
+				<option text="Detailed Budget" value="Detailed" />
+				<option text="Group Budget" value="Group" />
+			</lightning:select>
+
+			<aura:if isTrue="{!v.budgetType == 'Group'}">
+				<div style="margin-top: 1rem;">
+					<lightning:select aura:id="groupBudgetType" label="Group By" value="{!v.groupBudgetType}">
+						<option text="Vendor" value="Vendor" />
+						<option text="Product Family" value="Product_Family" />
+						<option text="Phase" value="Phase" />
+						<option text="Cost Code" value="Cost_Code" />
+						<option text="Category" value="Category" />
+					</lightning:select>
+				</div>
+			</aura:if>
+		</div>
+	</div>
+	<div class="slds-modal__footer">
+		<lightning:button label="Cancel" onclick="{!c.cancel}" />
+		<lightning:button variant="brand" label="Create Budget" onclick="{!c.createBudget}" />
+	</div>
+	<c:BT_Spinner />
+</aura:component>

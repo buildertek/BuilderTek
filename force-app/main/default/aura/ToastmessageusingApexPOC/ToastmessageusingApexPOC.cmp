@@ -1,0 +1,11 @@
+<!-- AsyncOperationComponent.cmp -->
+<aura:component controller="ApexclassforToastPOC"  implements="lightning:isUrlAddressable,force:appHostable,flexipage:availableForAllPageTypes" 
+                access="global">
+    <aura:attribute name="statusMessage" type="String" />
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doAsyncOperation}" />
+    
+    <div>
+        <p>{!v.statusMessage}</p>
+    </div>
+</aura:component>

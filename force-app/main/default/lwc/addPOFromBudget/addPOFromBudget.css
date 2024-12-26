@@ -1,0 +1,90 @@
+.spinner-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.5); /* Optional: Semi-transparent background */
+    z-index: 9999; /* Higher z-index to ensure it's on top */
+    pointer-events: none; /* Allow interactions with underlying content */
+}
+
+.slds-modal__container {
+    position: relative; /* Ensure z-index stacking context */
+    max-width: 70vw;
+}
+
+.slds-modal__header {
+    position: relative; /* Ensure z-index stacking context */
+}
+
+.slds-modal__footer {
+    justify-content: space-between;
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 0.25rem;
+    border: 1px solid #d8dde6;
+}
+
+.custom-table th,
+.custom-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e3e8ee;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+    max-width: 200px;
+}
+
+.custom-table th {
+    background-color: #0070d2;
+    color: #ffffff;
+    font-weight: bold;
+    text-transform: uppercase;
+    position: sticky;
+    top: 0;
+    z-index: 2; /* Ensure it’s above the table but below the spinner */
+}
+
+.custom-table tbody tr:hover {
+    background-color: #eaf1f9;
+}
+
+.custom-table tbody td {
+    vertical-align: middle;
+}
+
+.custom-table th input[type="checkbox"],
+.custom-table td input[type="checkbox"] {
+    margin: 0;
+}
+
+.wider-column {
+    width: 40%;
+    max-width: 300px;
+}
+
+.checkbox-column {
+    width: 5%;
+}
+
+.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sticky-header {
+    position: sticky;
+    top: 0;
+    background-color: #0070d2;
+    z-index: 1;
+}

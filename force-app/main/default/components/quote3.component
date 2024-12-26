@@ -1,0 +1,118 @@
+<apex:component controller="quoteEmail3" access="global">
+    <apex:attribute type="id" name="relatedTo_id" assignTo="{!relatedToId}" description="RelatedTo" />
+    <apex:attribute type="string" name="querystringfields" assignTo="{!querystring}" description="querystring" access="global"/>
+    <!-- the below attribute is for the selected option in the quote please ignore the name the function is to let user select the option from the dropdown -->
+    <apex:attribute type="string" name="querystringfieldss" assignTo="{!querystrings}" description="querystrings" access="global"/>
+
+    <table style="width: 100%;text-align: left;border-spacing: 0;">
+        <thead style="background: {!tableHeaderDynamicColor}">
+            <th style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #ccc;padding: 5px 15px; width: 250px; color: white;">Product Name (Long)</th>
+            <th style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #ccc;padding: 5px 15px; width: 250px; color: white;">Notes</th>
+            <th style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #ccc;padding: 5px 15px; width: 50px; text-align: right; color: white;">Quantity</th>
+            <th colspan="{!totalcat}" style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #ccc;padding: 5px 15px; text-align: center; width: {!totalcat * 125}px; color: white;">Unit Sales Price</th>
+            <!-- <th style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #ccc;padding: 5px 15px; width: 125px; text-align: right; color: white;">Total</th> -->
+        </thead>
+
+        <apex:outputPanel rendered="{!NOT(noCategory)}">
+            <tr style="background: {!tableHeaderDynamicColor}">
+                <th style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #ccc;padding: 5px 15px; width: 150px;"></th>
+                <th style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #ccc;padding: 5px 15px; width: 150px;"></th>
+                <apex:outputPanel rendered="false">
+                    <th style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #ccc;padding: 5px 15px; width: 125px;"></th>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!haveNull}">
+                    <th style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #ccc;padding: 5px 15px; width: 125px;"></th>
+                </apex:outputPanel>
+                <th style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #bbb2b2;padding: 5px 15px; width: 125px;"></th>
+                <apex:repeat value="{!categoryList}" var="category">
+                    <th style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #ccc;padding: 5px 15px; width: 125px; color: white;">
+                        {!category}
+                    </th>
+                </apex:repeat>
+                <!-- <th style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #bbb2b2;padding: 5px 15px; width: 125px; color: white;"></th> -->
+            </tr>
+        </apex:outputPanel>
+
+
+        <apex:repeat value="{!groupingList}" var="group">
+            <tr style="line-height: 1.6; ">
+                <td
+                    style="font-size: 14px;padding: 5px 15px;color:white;text-align: left;border: 1px solid #ccc; background-color:{!tableHeaderDynamicColor}; width: 150px;">
+                    <span>
+                        <apex:outputText value="{!group}" />
+                    </span>
+                </td>
+                <td style="font-size: 14px;padding: 5px 15px;color:white;text-align: left;border: 1px solid #ccc; background-color:{!tableHeaderDynamicColor}; width: 150px;"></td>
+                <!-- <td style="font-size: 14px;padding: 5px 15px;color:white;text-align: right;border: 1px solid #ccc; background-color:{!tableHeaderDynamicColor}; width: {125 * (totalcat + 1) + 50}px;"
+                    colspan="{!totalcat + 1}"></td> -->
+                <td style="font-size: 14px;padding: 5px 15px;color:white;text-align: right;border: 1px solid #ccc; background-color:{!tableHeaderDynamicColor}; width: 125px;"></td>
+                <apex:repeat value="{!categoryList}" var="category">
+                    <td style="font-size: 14px;padding: 5px 15px;color:white;text-align: right;border: 1px solid #ccc; background-color:{!tableHeaderDynamicColor}; width: 125px;">
+                        {!getNestedGroupingCategoryTotalMap[group][category]}
+                    </td>
+                </apex:repeat>
+                <!-- <td style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #ccc;padding: 5px 15px; background-color:{!tableHeaderDynamicColor}; width: 125px; text-align: right; color: white;">
+                    <span style="float:right;">
+                        <apex:outputText value="{0, number, $###,###,###,##0.00}">
+                            <apex:param value="{!groupingTotalMap[group]}" />
+                        </apex:outputText>
+                    </span>
+                </td> -->
+            </tr>
+            <apex:repeat value="{!groupingtoobj[group]}" var="item">
+                <tr>
+                    <td style="font-size: 14px;padding: 5px 15px;color:black;text-align: left;border: 1px solid  #ccc; width: 250px;">
+                        <apex:outputText value="{!item['Name']}" />
+                    </td>
+                    <td style="font-size: 14px;padding: 5px 15px;color:black;text-align: left;border: 1px solid  #ccc; width: 250px;">
+                        <apex:outputText value="{!item['Notes']}" />
+                    </td>
+                    <td style="font-size: 14px;padding: 5px 15px;color:black;text-align: right;border: 1px solid  #ccc; width: 50px;">
+                        <apex:outputText value="{!item['Quantity']}" />
+                    </td>
+                    <apex:outputPanel rendered="false">
+                        <td style="font-size: 14px;padding: 5px 15px;color:black;text-align: right;border: 1px solid  #ccc; width: 125px;">
+                            <apex:outputText value="{!item['nullUnitPrice']}" />
+                        </td>
+                    </apex:outputPanel> 
+                    <apex:outputPanel rendered="{!haveNull}">
+                        <td style="font-size: 14px;padding: 5px 15px;color:black;text-align: right;border: 1px solid  #ccc; width: 125px;">
+                            <apex:outputText value="{!item['nullUnitPrice']}" />
+                        </td>
+                    </apex:outputPanel>
+                    <apex:repeat value="{!categoryList}" var="category">
+                        <td style="font-size: 14px;padding: 5px 15px;color:black;text-align: right;border: 1px solid  #ccc; width: 125px;">
+                            <apex:outputText value="{!item[category + 'UnitPrice']}" />
+                        </td>
+                    </apex:repeat>
+                    <!-- <td style="font-size: 14px;padding: 5px 15px;color:black;text-align: right;border: 1px solid  #ccc; width: 125px;">
+                        <apex:outputText value="{!item['TotalPrice']}" />
+                    </td> -->
+                    <!-- <td style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #ccc;padding: 5px 15px; width: 125px; text-align: right; color: white;"></td> -->
+                </tr>
+            </apex:repeat>
+        </apex:repeat>
+
+        <tr style="background: {!tableHeaderDynamicColor}">
+            <th style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #ccc;padding: 5px 15px; width: 150px;"></th>
+            <th style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #ccc;padding: 5px 15px; width: 150px;"></th>
+            <apex:outputPanel rendered="false">
+                <th style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #ccc;padding: 5px 15px; width: 125px;"></th>
+            </apex:outputPanel>
+            <apex:outputPanel rendered="{!haveNull}">
+                <th style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #ccc;padding: 5px 15px; width: 125px;"></th>
+            </apex:outputPanel>
+            <th style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #bbb2b2;padding: 5px 15px; width: 125px;"></th>
+            <apex:repeat value="{!categoryList}" var="category">
+                <th style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #ccc;padding: 5px 15px; width: 125px; color: white;">
+                    <span style="float: right;">
+                        <apex:outputText value="{0, number, $###,###,###,##0.00}">
+                            <apex:param value="{!groupingTotalCatMap[category]}" />
+                        </apex:outputText>
+                    </span>
+                </th>
+            </apex:repeat>
+            <!-- <th style="font-size: 15px;border-bottom: 1px solid #ccc; border-right: 1px solid #ccc;padding: 5px 15px; width: 125px; color: white;"></th> -->
+        </tr>
+    </table>
+</apex:component>

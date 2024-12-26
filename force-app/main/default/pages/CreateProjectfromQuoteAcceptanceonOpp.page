@@ -1,0 +1,69 @@
+<apex:page controller="CreateProjectfromQuoteAcceptanceonOpp" sidebar="false" lightningStylesheets="true">
+    <apex:slds />
+    <apex:form id="frmConfigure">
+        <apex:pageBlock mode="maindetail" id="mainDetailPageBlock">
+            <apex:pageMessages />  
+            <apex:pageblocksection id="pageBlockSection">
+                <apex:inputcheckbox value="{!isCreateProjectfromQuoteAcceptanceonOpp}" label="Create Project from Quote Acceptance on Opportunity">
+                </apex:inputcheckbox>
+                <apex:inputcheckbox value="{!isCreatesendcustomerquoteaftersignature}" label="Send Owner Email after Quote acceptance">
+                </apex:inputcheckbox>
+                <apex:inputtext value="{!emailsubject}" label="Email Subject"/>
+                
+                <apex:inputcheckbox value="{!isUpdatetheOppAmount}" label="Update the Opp Amount">
+                </apex:inputcheckbox>
+                <apex:inputField value="{!admininterface.Default_Project_Owner__c}" styleClass="slds-input" style="width:320px;"/>
+                <apex:inputtext value="{!isBaseUrl}" label="Org URL"/>
+                <apex:inputcheckbox value="{!isRemovesingleQuoteLineOption}" label="Remove Single Quote Line Option">
+                </apex:inputcheckbox>
+                <apex:inputcheckbox value="{!hideGlobalMargin}" label="Hide Global Margin">
+                </apex:inputcheckbox>
+                <apex:inputcheckbox value="{!hideGlobalMarkup}" label="Hide Global Markup">
+                </apex:inputcheckbox>
+                <!-- Labbel changed from : Reject Quote on Rejected Lines based on CHB-35 -->
+                
+                <apex:selectList label="Grouping Level 1"  id="grouping1" value="{!GroupingLevel1}" size="1">
+                    <apex:selectOptions value="{!GroupingOptions}" />
+                </apex:selectList>
+                
+                <apex:selectList label="Grouping Level 2" id="grouping2" value="{!GroupingLevel2}" size="1">
+                    <apex:selectOptions value="{!GroupingOptions}" />
+                </apex:selectList>
+                
+                <apex:selectList label="Grouping Level 3"  id="grouping3" value="{!GroupingLevel3}" size="1">
+                    <apex:selectOptions value="{!GroupingOptions}" />
+                </apex:selectList>
+                
+                <apex:selectList label="Grouping Level 4" id="grouping4"  value="{!GroupingLevel4}" size="1">
+                    <apex:selectOptions value="{!GroupingOptions}" />
+                </apex:selectList>
+                <apex:inputcheckbox value="{!reject_Quote_on_Rejected_Lines}" label="Reject all or Acccept all">
+                </apex:inputcheckbox>
+                <apex:inputcheckbox value="{!showmargin}" label="Show Margin (for Add product/Quote Line) ">
+                </apex:inputcheckbox>
+                <apex:inputcheckbox value="{!showQuoteOption}" label="Display Quote Options">
+                </apex:inputcheckbox>
+
+                <label for="head"  style="margin-left: 116px;">Color Code</label>
+                <input type="color" id="head" name="ColorCode" onchange="updateColorCode(this.value)" value="{!colorcode}" style="margin-left: 6px;"/>
+                <apex:inputHidden value="{!colorcode}" id="colorCodeInput"/>
+
+
+                <center>
+                    <apex:commandButton value="Save" id="onCreateProjectfromQuoteAcceptanceonOpp"  styleClass="slds-button slds-button_brand" action="{!onCreateProjectfromQuoteAcceptanceonOpp}"></apex:commandButton>
+                </center>
+            </apex:pageblocksection>
+        </apex:pageBlock>
+    </apex:form>
+
+    <script type="text/javascript">
+      function updateColorCode(color) {
+        console.log(color);
+        document.getElementById('{!$Component.frmConfigure.mainDetailPageBlock.pageBlockSection.colorCodeInput}').value = color;
+        console.log(document.getElementById('{!$Component.frmConfigure.mainDetailPageBlock.pageBlockSection.colorCodeInput}').value );
+      }
+    </script>
+
+
+   
+</apex:page>

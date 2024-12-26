@@ -1,0 +1,13 @@
+.THIS .slds-modal__header {
+    padding-top: 0 !important;
+}
+
+.THIS .topoftable{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1%;
+    padding: 2%;
+    width: 50%;
+}

@@ -1,0 +1,18 @@
+<aura:component implements="lightning:isUrlAddressable,force:hasRecordId,force:lightningQuickActionWithoutHeader"
+	controller="CreatePOController" access="global">
+
+	<aura:attribute name="isSchedulePo" type="boolean" default="false" />
+
+	<aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+
+	<lightning:notificationsLibrary aura:id="notifLib" />
+
+	<div aura:id="progressbar">
+    	<center>
+	    	<img alt="Creating new PO." src="{!$Resource.gearsloading}" style="height:150px !important;"/>
+	    	<br/>
+	    	Creating new PO <br/> Please don't leave this page until PO is created.
+    	</center>
+    </div>
+
+</aura:component>

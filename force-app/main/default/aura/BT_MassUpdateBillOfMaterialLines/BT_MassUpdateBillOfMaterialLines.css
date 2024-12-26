@@ -1,0 +1,113 @@
+.THIS .label-hidden>label {
+}
+
+.THIS lightning-icon.some-indicator {
+    /*background-color: #006DCC;*/
+    background-color: #e05d5d;
+    width: 2rem;
+    height: 2rem;
+}
+
+.THIS lightning-icon.some-indicator>lightning-primitive-icon>svg>use {
+    fill: white;
+    background-color: #006DCC;
+    width: 2rem;
+    height: 2rem;
+}
+
+.THIS .slds-form-element__label {
+    margin-top: -11px;
+    /*display : none !important;
+    visibility : hidden !important;*/
+}
+
+.THIS .custom-loading-text {
+    transform: rotate(-90deg);
+    position: absolute;
+    top: -0.5rem;
+    left: 1rem;
+    white-space: nowrap;
+    font-size: 20px;
+}
+
+
+.THIS .firstRowContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-inline: 1rem;
+}
+
+.THIS .heading {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #3A84D8;
+}
+
+.THIS .searchBoxContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    margin: 0rem 1rem 1rem 1rem;
+}
+
+.THIS .slds-table th {
+    background-color: #f3f2f2;
+    color: #3A84D8;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    line-height: 2rem;
+    padding: 0.5rem;
+    white-space: nowrap;
+}
+
+.THIS .slds-table td {
+    padding: 0.25rem 0.5rem;
+    white-space: nowrap;
+    height: 2rem;
+}
+
+.THIS .group-header-container {
+    background-color: #0070d2;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    color: #ffffff;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.THIS .group-header {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.THIS .groupedContainer {
+    margin-bottom: 2rem;
+    border: 1px solid #d8dde6;
+    border-radius: 0.25rem;
+    background-color: #f4f6f9;
+}
+
+.THIS .light {
+    color: #f4f6f9;
+}
+
+.THIS .slds-modal__close {
+    color: #ffffff;
+}
+
+.THIS .table-scroll-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+}
+
+.THIS .slds-table {
+    width: 100%;
+    min-width: 600px;
+}

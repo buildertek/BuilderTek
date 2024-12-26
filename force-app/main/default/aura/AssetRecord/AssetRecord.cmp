@@ -1,0 +1,119 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader,lightning:actionOverride"
+    access="global" controller="New_AssetController">
+
+    <aura:attribute name="recordId" type="String" />
+    <aura:attribute name="Spinner" type="Boolean" default="false" />
+    <aura:attribute name="fieldList" type="List" />
+    <aura:attribute name="fieldListLeft" type="List" />
+    <aura:attribute name="fieldListRight" type="List" />
+    <aura:attribute name="viewMode" type="Boolean" default="true" />
+    <aura:attribute name="products" type="List" />
+    <aura:attribute name="productName" type="String" />
+    <aura:attribute name="assetRecord" type="Asset_Manager__c" default="{ 'sobjectType': 'Asset_Manager__c'}" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+
+    <aura:if isTrue="{!v.Spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+                <div class="custom-loading-text">
+                    <b>Processing, Please Wait</b>
+                </div>
+            </div>
+        </div>
+    </aura:if>
+
+    <aura:if isTrue="{!v.viewMode}">
+        <lightning:recordViewForm recordId="{!v.recordId}" objectApiName="buildertek__Asset_Manager__c">
+            <lightning:messages />
+                <div class="slds-grid ">
+                    <div class="slds-col slds-size_1-of-2">
+                        <aura:iteration items="{!v.fieldListLeft}" var="field">
+                            <div class="field-container">
+                                <lightning:outputField class="bottom-line" fieldName="{!field.fieldName}" />
+                                <lightning:buttonIcon iconName="utility:edit" size="small" variant="bare" onclick="{!c.editRecord}" />
+                            </div>
+                        </aura:iteration>
+                        <div class="field-container">
+                            <lightning:outputField class="bottom-line" fieldName="OwnerId" />
+                        </div>
+                        <div class="field-container">
+                            <lightning:outputField class="bottom-line" fieldName="CreatedById" />
+                        </div>
+                    </div>
+                    <div class="slds-col slds-size_1-of-2">
+                        <aura:iteration items="{!v.fieldListRight}" var="field">
+                            <div class="field-container">
+                                <lightning:outputField class="bottom-line" fieldName="{!field.fieldName}" />
+                                <lightning:buttonIcon iconName="utility:edit" size="small" variant="bare" onclick="{!c.editRecord}" />
+                            </div>
+                        </aura:iteration>
+                        <div class="field-container">
+                            <lightning:outputField class="bottom-line" fieldName="LastModifiedById" />
+                        </div>
+                    </div>
+                </div>
+        </lightning:recordViewForm>
+    </aura:if>
+
+    <aura:if isTrue="{!not(v.viewMode)}">
+        <lightning:recordEditForm recordId="{!v.recordId}" objectApiName="buildertek__Asset_Manager__c">
+            <lightning:messages />
+            <div class="slds-grid ">
+                <div class="slds-col slds-size_1-of-2">
+                    <aura:iteration items="{!v.fieldListLeft}" var="field">
+                        <div class="field-container">
+                            <aura:if isTrue="{!and(field.fieldName!='Name', field.fieldName!='buildertek__Asset_Product__c')}">
+                                <aura:if isTrue="{!field.fieldName!='RecordTypeId'}">
+                                    <lightning:inputField aura:id="{!field.fieldName}"  fieldName="{!field.fieldName}" onchange="{!c.updateAssetRecord}" />
+                                    <aura:set attribute="else">
+                                        <lightning:inputField aura:id="{!field.fieldName}"  disabled="true" fieldName="RecordTypeId" value="{!v.selectedRecordType}" />
+                                    </aura:set>
+                                </aura:if>
+                                <aura:set attribute="else">
+                                    <aura:if isTrue="{!field.fieldName=='Name'}">
+                                        <lightning:inputField aura:id="{!field.fieldName}" onchange="{!c.updateAssetRecord}"  fieldName="Name" value="{!v.productName}" required="true" />
+                                    </aura:if>
+                                    <aura:if isTrue="{!field.fieldName=='buildertek__Asset_Product__c'}">
+                                        <lightning:inputField aura:id="{!field.fieldName}"  fieldName="buildertek__Asset_Product__c" onchange="{!c.handlechangeofProduct}"  />
+                                    </aura:if>
+                                </aura:set>
+                            </aura:if>
+                        </div>
+                    </aura:iteration>
+                </div>
+                <div class="slds-col slds-size_1-of-2">
+                    <aura:iteration items="{!v.fieldListRight}" var="field">
+                        <div class="field-container">
+                            <aura:if isTrue="{!and(field.fieldName!='Name', field.fieldName!='buildertek__Asset_Product__c')}">
+                                <aura:if isTrue="{!field.fieldName!='RecordTypeId'}">
+                                    <lightning:inputField aura:id="{!field.fieldName}"  fieldName="{!field.fieldName}" onchange="{!c.updateAssetRecord}" />
+                                    <aura:set attribute="else">
+                                        <lightning:inputField aura:id="{!field.fieldName}"  disabled="true" fieldName="RecordTypeId" value="{!v.selectedRecordType}" />
+                                    </aura:set>
+                                </aura:if>
+                                <aura:set attribute="else">
+                                    <aura:if isTrue="{!field.fieldName=='Name'}">
+                                        <lightning:inputField aura:id="{!field.fieldName}" onchange="{!c.updateAssetRecord}" fieldName="Name" required="true" />
+                                    </aura:if>
+                                    <aura:if isTrue="{!field.fieldName=='buildertek__Asset_Product__c'}">
+                                        <lightning:inputField aura:id="{!field.fieldName}" onchange="{!c.updateAssetRecord}"  fieldName="buildertek__Asset_Product__c" />
+                                    </aura:if>
+                                </aura:set>
+                            </aura:if>
+                        </div>
+                    </aura:iteration>
+                </div>
+            </div>
+        </lightning:recordEditForm>
+        <div class="save" style="background-color: rgba(236, 235, 234, 0.9); margin: auto; text-align: center; width: 100%; padding: 10px; height: auto;">
+            <lightning:button label="Cancel" title="Cancel" onclick="{!c.leaveEditForm}" class="slds-m-left_x-small"/>
+            <lightning:button variant="brand" label="Save" title="Save" onclick="{!c.saveRecord}" class="saveBtn"/>
+        </div>
+    </aura:if>
+
+
+</aura:component>

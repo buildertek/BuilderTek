@@ -1,0 +1,72 @@
+<aura:component implements="force:appHostable,lightning:isUrlAddressable,force:lightningQuickActionWithoutHeader,flexipage:availableForRecordHome,flexipage:availableForAllPageTypes,lightning:actionOverride,force:hasRecordId,forceCommunity:availableForAllPageTypes"
+            access="global" controller="MassUpdateQuote">
+
+
+    <aura:attribute name="quoteLineWrapperList" type="Object" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="hideGlobalMargin" type="Boolean" default="false" />
+    <aura:attribute name="hideGlobalMarkup" type="Boolean" default="false" />
+
+
+
+    <div class="slds-modal__content" style="height:100% !important">
+        <c:BT_Spinner />
+
+        <lightning:card aura:id="lightCard" class="slds-card_boundary slds-page-header slds-scrollable" title="Quote Lines">
+            <aura:set attribute="actions">
+                <lightning:button iconName="utility:save" iconPosition="left" onclick="{!c.onMassUpdate}" label="Save" />
+                <lightning:button iconName="utility:add" iconPosition="left" onclick="{!c.onAddClick}" label="Add" />
+                <lightning:button iconName="utility:close" iconPosition="left" onclick="{!c.onMassUpdateCancel}" label="Cancel" />
+            </aura:set>
+        </lightning:card>
+
+          <div class="slds-border_top slds-box slds-box_xx-small slds-scrollable" >
+                <table class="slds-table slds-table--bordered':'slds-table--bordered'">
+                    <thead>
+                        <tr style="height:35px; !important" class="slds-text-title_caps">
+                            <th scope="col" class="table-Header" style="border-top-left-radius:5px;">
+                                <div class="slds-truncate" title="Pricebook">Pricebook</div>
+                            </th>
+                            <th scope="col" class="table-Header">
+                                <div class="slds-truncate" title="Product Family">Product Family</div>
+                            </th>
+                            <th scope="col" class="table-Header">
+                                <div class="slds-truncate" title="Product">Product</div>
+                            </th>
+                            <th class="table-Header">
+                                <div class="slds-truncate" title="Quote Line Description"> Description</div>
+                            </th>
+                            <th scope="col" class="table-Header">
+                                <div class="slds-truncate" title="Grouping">Group</div>
+                            </th> 
+                            <th scope="col" class="table-Header">
+                                <div class="slds-truncate" title="Notes">Notes</div>
+                            </th>
+                            <th scope="col" class="table-Header">
+                                <div class="slds-truncate" title="Quantity">Quantity</div>
+                            </th>
+                            <th scope="col" class="table-Header">
+                                <div class="slds-truncate" title="Unit Cost">Unit Cost</div>
+                            </th>
+                            <aura:if isTrue="{!!v.hideGlobalMargin}">
+                                <th scope="col" class="table-Header">
+                                    <div class="slds-truncate" title="Margin">Margin</div>
+                                </th>
+                            </aura:if>
+                            <aura:if isTrue="{!!v.hideGlobalMarkup}">
+                                <th scope="col" class="table-Header">
+                                    <div class="slds-truncate" title="Markup">Markup</div>
+                                </th>
+                            </aura:if>
+                            <th scope="col" class="table-Header">
+                                <span> </span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                      
+                    </tbody>
+                </table>
+        </div>
+    </div>
+</aura:component>

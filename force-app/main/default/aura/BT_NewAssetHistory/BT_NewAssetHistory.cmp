@@ -1,0 +1,98 @@
+<aura:component controller="BT_NewAssetHistoryController"
+    implements="flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader,lightning:actionOverride"
+    access="global">
+
+    <aura:html tag="style">
+        .slds-modal__container {
+        max-width: 52rem !important;
+        width: 52% !important;
+        }
+
+        .cuf-content {
+        padding: 0 0rem !important;
+        }
+
+        .slds-p-around--medium {
+        padding: 0rem !important;
+        }
+
+        .slds-modal__content {
+        height: unset !important;
+        max-height: unset !important;
+        box-shadow: none !important;
+        }
+
+        .scrollable {
+        height: 400px;
+        overflow-y: auto;
+        }
+        .slds-table_cell-buffer tr>th:last-child, .slds-table_cell-buffer tr>td:last-child, .slds-table--cell-buffer
+        tr>th:last-child, .slds-table--cell-buffer tr>td:last-child {
+        padding-right: 0px !important;
+        }
+    </aura:html>
+
+    <aura:attribute name="assetHistoryList" type="Object[]" />
+    <aura:attribute name="projectId" type="Id" />
+    <aura:attribute name="hourlyRate" type="Decimal" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+
+    <div class="slds-modal__header" style="font-size:17px;">
+        Create Asset History
+    </div>
+    <div class="slds-modal__content">
+        <div class="slds slds-scope scrollable">
+            <aura:if isTrue="{!not(empty(v.assetHistoryList))}">
+                <div class="WarningMessage">
+                    <p>You need to close out the previous Asset History record for this Asset before you can use this Asset on another Project.</p>
+                    <p style="padding-top: 10px;">You can do this by entering the "Date Off Job" field below. Once you
+                        provide this date you can create a new
+                        Asset
+                        History record.</p>
+                </div>
+                <!-- Data Table -->
+                <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                    <thead>
+                        <tr class="slds-text-title_caps">
+                            <th scope="col">Name</th>
+                            <th scope="col">Project</th>
+                            <th scope="col">Date On Job</th>
+                            <th scope="col">Hours Used</th>
+                            <th scope="col">Date Off Job</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.assetHistoryList}" var="history" indexVar="index">
+                            <tr>
+                                <td>{!history.Name}</td>
+                                <td>
+                                    <aura:if isTrue="{!not(empty(history.buildertek__Project__r))}">
+                                        <span class="truncateText">{!history.buildertek__Project__r.Name}</span>
+                                        <aura:set attribute="else">
+                                            <span>-</span>
+                                        </aura:set>
+                                    </aura:if>
+                                </td>
+                                <td>{!history.buildertek__Date_on_Job__c}</td>
+                                <td>{!history.buildertek__Hours_Used__c}</td>
+                                <td>
+                                    <div style="width: 150px;">
+                                        <lightning:input type="date" value="{!history.buildertek__Date_off_Job__c}"
+                                            onchange="{!c.handleDateChange}" name="{!index}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+            </aura:if>
+        </div>
+    </div>
+    <div class="slds-modal__footer">
+        <lightning:button label="Cancel" onclick="{!c.closeQuickAction}" />
+        <lightning:button variant="brand" label="Save" onclick="{!c.handleSave}" />
+    </div>
+
+    <c:BT_Spinner />
+</aura:component>

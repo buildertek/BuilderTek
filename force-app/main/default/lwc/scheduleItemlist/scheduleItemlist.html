@@ -1,0 +1,19 @@
+<template>
+    <div class="slds-m-around_medium">
+        <lightning-card title="Schedule item">
+            <div class="slds-m-around_medium">
+                <template if:true={data}>
+                    <lightning-datatable
+                        key-field="Id"
+                        data={data}
+                        columns={columns}
+                        hide-checkbox-column>
+                    </lightning-datatable>
+                </template>
+                <template if:true={error}>
+                    <p>Error fetching Schedule item</p>
+                </template>
+            </div>
+        </lightning-card>
+    </div>
+</template>

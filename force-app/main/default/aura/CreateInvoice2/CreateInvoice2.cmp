@@ -1,0 +1,160 @@
+<aura:component controller="CreateInvoiceFromQuote"
+    implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader"
+    access="global">
+
+    <aura:attribute name="IsSpinner" type="Boolean" default="false" />
+    <aura:attribute name="showmodal" type="Boolean" default="false" />
+    <aura:attribute name="recordId" type="String" />
+    <aura:attribute name="quoteLineData" type="Object" />
+    <aura:attribute name="allPercentage" type="Integer" default="0" />
+    <aura:attribute name="orgCurrency" type="String" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+
+    <!-- <ltng:require styles="{!$Resource.MOdalPreviewWidth72}" /> -->
+    <aura:html tag="style">
+        .onePanelManagerScoped .pmcontainer{
+            position: fixed !important;
+            z-index: 9999;
+        }
+
+        .slds-modal__container {
+            max-width: 52rem !important;
+            width: 52% !important;
+        }
+        
+        .cuf-content {
+            padding: 0 0rem !important;
+        }
+        
+        .slds-p-around--medium {
+            padding: 0rem !important;
+        }
+        
+        .slds-modal__content {
+            height: unset !important;
+            max-height: unset !important;
+            box-shadow: none !important;
+        }
+        
+        .slds-modal__container {
+            max-width: 72rem !important;
+            width: 72% !important;
+        }
+        
+        .scrollable {
+            height: 400px;
+            overflow-y: auto;
+        }
+    </aura:html>
+
+    <aura:if isTrue="{!v.showmodal}">
+        <div class="slds-modal__header">
+            <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Create Invoice</h2>
+        </div>
+        <div class="slds-scrollable" style="width:100%; max-height: 55vh; overflow: auto;">
+            <div class="slds-modal__content slds-p-around--large" style="overflow: auto;">
+                <div>
+
+                    <div class="slds-grid slds-gutters">
+                        <div class="topoftable">
+                            <label class="slds-form-element__label" for="input-unique-id">Invoiced Percentage: </label>
+                            <lightning:input type="number"
+                                             onchange="{!c.handleSetAllPercentage}" 
+                                             min="0" max="100" step="1" 
+                                             value="{!v.allPercentage}" 
+                                             label="Set to all" 
+                                             variant="label-hidden" />
+                            <lightning:button label="Update all Lines" 
+                                            onclick="{!c.onclickSetAll}" 
+                                            variant="brand" />
+                        </div>
+                    </div>
+
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                        <thead>
+                            <tr class="slds-line-height_reset">
+                                <th scope="col" style="text-align: center;">
+                                    <div class="slds-truncate" title="Product Name">Product Name</div>
+                                </th>
+                                <th scope="col" style="text-align: center;">
+                                    <div class="slds-truncate" title="Quantity">Quantity</div>
+                                </th>
+                                <th scope="col" style="text-align: center;">
+                                    <div class="slds-truncate" title="Unit Price">Unit Price</div>
+                                </th>
+                                <th scope="col" style="text-align: center;">
+                                    <div class="slds-truncate" title="Total Price">Total Price</div>
+                                </th>
+                                <th scope="col" style="text-align: center;">
+                                    <div class="slds-truncate" title="Invoice Amount">Previously Invoice Amount</div>
+                                </th>
+                                <th scope="col" style="text-align: center;">
+                                    <div class="slds-truncate" title="Invoiced Percentage">Invoiced Percentage</div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration items="{!v.quoteLineData}" var="lineItem">
+                                <tr class="slds-hint-parent">
+                                    <td data-label="Product Name">
+                                        <div class="slds-truncate" title="{!lineItem.ProductName}">{!lineItem.Name}</div>
+                                    </td>
+                                    <td data-label="Quantity" style="text-align: center;">
+                                        <div class="slds-truncate" title="{!lineItem.Quantity}">{!lineItem.Quantity}</div>
+                                    </td>
+                                    <td data-label="Unit Price" style="text-align: center;">
+                                        <div class="slds-truncate" title="{!lineItem.UnitPrice}">{!v.orgCurrency}&nbsp;{!lineItem.UnitPrice}</div>
+                                    </td>
+                                    <td data-label="Total Price" style="text-align: center;">
+                                        <div class="slds-truncate" title="{!lineItem.TotalPrice}">{!v.orgCurrency}&nbsp; {!lineItem.Total}</div>
+                                    </td>
+                                    <td data-label="Invoice Amount" style="text-align: center;">
+                                        <div class="slds-truncate" title="{!lineItem.InvoicedTotal}">{!v.orgCurrency}&nbsp; {!lineItem.InvoicedTotal}</div>
+                                    </td>
+                                    <td data-label="Invoice Percentage">
+                                        <lightning:input type="number" value="{!lineItem.percentageinv}" 
+                                                         onchange="{!c.handlePercentageChange}" 
+                                                         min="0" max="100" step="1" 
+                                                         label="Invoice Percentage" variant="label-hidden" 
+                                                         name="{!lineItem.Id}" 
+                                                         disabled="{!not(lineItem.isInvoiceable)}" />
+                                    </td>
+                                </tr>
+                            </aura:iteration>
+                            
+                        </tbody>
+                    </table>
+                </div>
+
+                
+            </div>
+        </div>
+        <!-- <footer> -->
+            <div class="slds-modal__footer">
+                <lightning:button variant="neutral" label="Cancel" onclick="{!c.closeModel}" />
+                <lightning:button aura:id="nextPage" variant="brand" label="Create Invoice " onclick="{!c.createInvoice}" />
+            </div>
+        </aura:if>
+        
+        <aura:if isTrue="{!v.IsSpinner}">
+            <div aura:id="spinnerId" class="slds-spinner_container" style="position:fixed; ">
+                <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative"
+                    role="alert">
+                    <span class="slds-assistive-text">Loading</span>
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                    <div class="custom-loading-text">
+                        <aura:if isTrue="{!v.showMessage}">
+                            <b>Processing, Please Wait</b>
+                            <!-- <b>Creating PoItems </b>-->
+
+                        </aura:if>
+                    </div>
+                </div>
+            </div>
+        </aura:if>
+    <lightning:notificationsLibrary aura:id="notifLib" />
+
+
+</aura:component>

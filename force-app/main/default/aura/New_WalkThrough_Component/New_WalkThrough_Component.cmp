@@ -1,0 +1,145 @@
+<aura:component controller="New_WalkThrough_Component" implements="force:hasRecordId,force:lightningQuickActionWithoutHeader,lightning:isUrlAddressable,lightning:actionOverride,force:hasSObjectName" access="global">
+
+    <aura:attribute name="listOfFields0" type="List" />
+    <aura:attribute name="isSaveNew" type="boolean" default="false"/>
+    <aura:attribute name="isLoading" type="Boolean" default="false" />
+    <aura:attribute name="parentprojectRecordId" type="String" default="" />
+    <aura:attribute name="parentRecordId" type="String" default="" />
+    <aura:attribute name="masterWTList" type="List" />
+    <aura:attribute name="selectedWalkThroughId" type="String" />
+    
+    <lightning:workspaceAPI aura:id="workspace"/>
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+
+
+    <aura:html tag="style">
+        .slds-modal__container {
+            max-width: 72rem !important;
+            width: 72% !important;
+            height: 95vh !important;
+        }
+        
+        .slds-modal__content {
+            overflow-y: auto;
+        }
+        
+        .scrollable-table {
+            max-height: calc(100vh - 600px);
+            overflow-y: auto;
+        }
+
+        .truncate-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sticky-header thead{
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .sticky-header thead th{
+            background-color: rgba(27, 82, 151, 1.0);
+            color: white;
+            line-height: 2;
+        }
+
+    </aura:html>
+    <div class="slds-modal__container">
+        <header class="slds-modal__header">
+            <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">New Walk Through</h2>
+        </header>
+        <div class="slds-modal__content" id="modal-content-id-1">
+            <lightning:recordEditForm aura:id="recordViewForm" objectApiName="buildertek__Walk_Through_List__c" onsubmit="{!c.handleSubmit}" density="Comfy" >
+                <div style="width:100%;overflow: auto;">
+                    <div style="background-color:white;">
+                        <lightning:layout multipleRows="true">
+                            <aura:iteration items="{!v.listOfFields0}" var="field">
+                                <aura:if isTrue="{!field.name == 'buildertek__Project__c'}">
+                                    <lightning:layoutItem size="12" mediumDeviceSize="6" padding="around-small">
+                                        <lightning:inputField fieldName="{!field.name}" value="{!v.parentprojectRecordId}" />
+                                    </lightning:layoutItem>
+                                    <aura:set attribute="else">
+                                        <aura:if isTrue="{!field.name == 'buildertek__Description__c'}">
+                                            <lightning:layoutItem size="12" mediumDeviceSize="6" padding="around-small">
+                                                <lightning:inputField fieldName="{!field.name}" required="true" />
+                                            </lightning:layoutItem>
+                                            <aura:set attribute="else">
+                                                <lightning:layoutItem size="12" mediumDeviceSize="6" padding="around-small">
+                                                    <lightning:inputField fieldName="{!field.name}" />
+                                                </lightning:layoutItem>
+                                            </aura:set>
+                                        </aura:if>
+                                    </aura:set>
+                                </aura:if>
+                            </aura:iteration>
+                        </lightning:layout>
+                    </div>
+                </div>
+                <div class="slds-modal__content" style="height: 25vh;">
+                    <div class="slds slds-scope scrollable-table" style="height: 100%;">
+                        <table class="slds-table slds-table_bordered slds-table_fixed-layout sticky-header" role="grid">
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col" style="width:50px; padding-left: 1rem;"></th>
+                                    <th>Walk Through Name #</th>
+                                    <th>Name</th>
+                                    <th>Project</th>
+                                    <th>Total Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <aura:iteration items="{!v.masterWTList}" var="rec">
+                                    <tr class="slds-hint-parent">
+                                        <td style="width:50px; padding-left: 1rem;">
+                                            <ui:inputRadio name="walkthroughRadio" text="{!rec.Id}" change="{!c.handleRadioChange}" />
+                                        </td>
+                                        <td role="gridcell">
+                                            <a href="{!'/' + rec.Id}" target="_blank">{!rec.Name}</a>
+                                        </td>
+                                        <td role="gridcell">
+                                            <div class="truncate-text">
+                                                <ui:outputText value="{!rec.buildertek__Description__c}" />
+                                            </div>
+                                        </td>
+                                        <td role="gridcell">
+                                            <div class="truncate-text">
+                                                <ui:outputText value="{!rec.buildertek__Project__r.Name}" />
+                                            </div>
+                                        </td>
+                                        <td role="gridcell">
+                                            <lightning:formattedNumber value="{!rec.buildertek__Total_Price__c}" style="currency" />
+                                        </td>
+                                    </tr>
+                                </aura:iteration>
+                            </tbody>
+                        </table>
+                        <br />
+                    </div>
+                </div>
+                <footer aura:id="footer" class="slds-modal__footer">
+                    <lightning:button variant="neutral" title="Cancel" label="Cancel" onclick="{! c.closeModel }" />
+                    <lightning:button variant="neutral" type="submit" title="Save &amp; New" label="Save &amp; New" onclick="{!c.handlesaveNnew}" />
+                    <lightning:button variant="brand" type="submit" name="save" label="Save" disabled="{!v.isDisabled}" />
+                </footer>
+            </lightning:recordEditForm>
+        </div>          
+    </div>
+
+    <aura:if isTrue="{!v.isLoading}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+                <div class="custom-loading-text">
+                    <b>Processing, Please Wait</b>
+                </div>
+            </div>
+        </div>
+    </aura:if>
+
+</aura:component>

@@ -1,0 +1,3 @@
+<apex:page >
+           <c:quote3 relatedTo_id="a081K000011RE41QAG" querystringfields="Name,buildertek__Notes__c,buildertek__Quantity__c,buildertek__Net_Unit__c,buildertek__Net_Total_Price__c" />
+</apex:page>

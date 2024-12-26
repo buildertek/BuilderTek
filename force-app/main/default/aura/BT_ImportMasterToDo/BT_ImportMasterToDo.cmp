@@ -1,0 +1,99 @@
+<aura:component
+    implements="force:appHostable,force:lightningQuickActionWithoutHeader,flexipage:availableForRecordHome,flexipage:availableForAllPageTypes,lightning:actionOverride,force:hasRecordId,forceCommunity:availableForAllPageTypes"
+    access="global" controller="ImportMasterToDo">
+
+    <aura:attribute name="recordId" type="string" />
+    <aura:attribute name="recordList" type="List" />
+    <aura:attribute name="isAllSelected" type="Boolean" default="false" />
+    <aura:attribute name="loading" type="Boolean" default="false" />
+    <aura:handler name="change" value="{!v.isAllSelected}" action="{!c.selectionChange}" />
+
+    <aura:attribute name="PaginationList" type="Object" />
+    <aura:attribute name="startPage" type="Integer" />
+    <aura:attribute name="endPage" type="Integer" />
+    <aura:attribute name="totalRecords" type="Integer" />
+    <aura:attribute name="pageSize" type="Integer" default="10" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="searchKeyword" type="String" default="" />
+
+    <lightning:overlayLibrary aura:id="overlayLib" />
+    <ltng:require styles="{!$Resource.MOdalPreviewWidth72}" />
+
+    <div class="slds-modal__header" style="font-size:17px;">
+        Import Master To Do
+    </div>
+    <aura:html tag="style">
+		.lbl .slds-form-element__label{
+			display: none;
+		}
+	</aura:html>
+    <div class="slds-modal__content slds-p-around--large">
+        <div class="slds slds-scope">
+            <lightning:layoutItem padding="around-small" size="12">
+				<lightning:input class="lbl" value="{!v.searchKeyword}" placeholder="Search By Description..." name="searchField" onchange="{! c.onSearch }"/>
+			</lightning:layoutItem>
+            <table class="slds-table slds-table_bordered slds-table_fixed-layout" role="grid">
+                <thead>
+                    <tr class="slds-text-title_caps">
+                        <th width="5%" scope="col"
+                            style="background-color:rgba(27, 82, 151, 1.0); color:white; border-top-left-radius:5px;vertical-align: top;line-height: 2;">
+                            <!-- <ui:inputCheckbox aura:id="checkSelecteds" value="{!v.isAllSelected}"
+                                name="{!v.isAllSelected}" change="{!c.selectAll}" /> -->
+                        </th>
+                        <th width="45%"
+                            style="background-color:rgba(27, 82, 151, 1.0); color:white;vertical-align: top;line-height: 2;">
+                            Description
+                        </th>
+                        <th width="25%"
+                            style="background-color:rgba(27, 82, 151, 1.0); color:white;vertical-align: top;line-height: 2;">
+                            Customer Account
+                        </th>
+                        <th width="25%"
+                            style="background-color:rgba(27, 82, 151, 1.0); color:white;vertical-align: top;line-height: 2;">
+                            Vendor Account
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <aura:iteration items="{!v.PaginationList}" var="rec">
+                        <tr class="slds-hint-parent">
+                            <aura:if isTrue="{!rec.Id != null}">
+                                <td style="width: 30px;">
+                                    <ui:inputCheckbox aura:id="checkSelected" value="{rec.buildertek__Is_Selected__c}"
+                                        text="{!rec.Id}" change="{!c.onChangeHandler}" />
+                                </td>
+                                <td role="gridcell">
+                                    <span style="white-space: initial;">{!rec.buildertek__Description__c}</span>
+                                </td>
+                                <td role="gridcell">
+                                    <ui:outputText value="{!rec.buildertek__Customer_Account__r.Name}" />
+                                </td>
+                                <td role="gridcell">
+                                    <ui:outputText value="{!rec.buildertek__Assigned_Vendor__r.Name}" />
+                                </td>
+                            </aura:if>
+                        </tr>
+                    </aura:iteration>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="slds-modal__footer">
+        <div class="slds-clearfix">
+            <div class="slds-float_left">
+                <lightning:buttonGroup>
+                    <lightning:button label="Previous" disabled="{!v.startPage == 0}" onclick="{!c.previous}"
+                        variant="brand" iconName='utility:back' />
+                    &nbsp; &nbsp; &nbsp;
+                    <lightning:button label="Next" disabled="{!v.endPage >= v.totalRecords}" onclick="{!c.next}"
+                        variant="brand" iconName='utility:forward' iconPosition='right' />
+                </lightning:buttonGroup>            
+            </div>
+            <div class="slds-float_right">
+                <button class="slds-button slds-button--neutral" onclick="{!c.closeModel}">Cancel</button>
+                <button class="slds-button slds-button--brand" onclick="{!c.importRecords}">Import Master To Do</button>            
+            </div>
+        </div>
+    </div>
+    <c:BT_Spinner/>
+</aura:component>

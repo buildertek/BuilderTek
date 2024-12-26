@@ -1,0 +1,12 @@
+.THIS .Borders{
+    padding:10px;border:1px solid lightgray;border-radius:5px;margin-top:10px;background:white
+}
+
+.THIS .file-name-container{
+    font-size: 9px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 195.56px; /* Adjust as needed */
+    display: inline-block;
+}

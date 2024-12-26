@@ -1,0 +1,927 @@
+public without sharing class QBMap {
+
+    public static String mapAccountData(QBIntegrationQueue_SIFlow.salesInvoiceFlow_Wrapper SI_Wrapper, Integer a){
+        Account acc = SI_Wrapper.acc;
+        String accId = acc.Id;
+        String QBId = acc.buildertek__QB_Id__c;
+        QBCustomerJSON.Customer customer = new QBCustomerJSON.Customer();
+
+        String AccountId = acc.Id;
+        //Map given account fields
+        // customer.CompanyName = acc.Name +' - '+AccountId.right(4).substring(0,4);
+        customer.CompanyName = acc.Name;
+        if(acc.Name.contains(' ')){
+            List<String> nameParts = acc.Name.split(' ');
+            customer.GivenName = nameParts[0];
+            customer.FamilyName = nameParts[1];
+        }
+        else{
+            customer.GivenName = acc.Name;
+        }
+        
+        customer.Taxable = True; 
+        customer.Notes = acc.Description;
+        if(acc.buildertek__QB_Id__c != null && acc.buildertek__QB_Id__c != ''){
+            customer.Id = acc.buildertek__QB_Id__c;
+            customer.sparse = true;
+            if(SI_Wrapper.SyncToken == null){
+                customer.SyncToken = acc.buildertek__QBO_SyncToken__c;
+            }
+            else {
+                customer.SyncToken = SI_Wrapper.SyncToken;
+            }
+        }
+     
+        //Create Shipping address
+        QBCustomerJSON.ShipAddr shipAddy = new QBCustomerJSON.ShipAddr();
+        shipAddy.City = acc.ShippingCity;
+        shipAddy.Line1 = acc.ShippingStreet;
+        shipAddy.CountrySubDivisionCode = acc.ShippingState;
+        shipAddy.PostalCode = acc.ShippingPostalCode;
+        shipAddy.Lat = String.valueOf(acc.ShippingLatitude);
+        shipAddy.Long_x = String.valueOf(acc.ShippingLongitude);
+        shipAddy.Country = acc.ShippingCountry;
+        shipAddy.CountrySubDivisionCode = acc.ShippingCountry;
+        customer.ShipAddr = shipAddy;
+
+        customer.PrintOnCheckName = acc.Name;
+
+        //Create Email Address
+        QBCustomerJSON.PrimaryEmailAddr Addr = new QBCustomerJSON.PrimaryEmailAddr();
+        Addr.Address = acc.buildertek__Email_Address__c;
+        customer.PrimaryEmailAddr = Addr;
+
+        // Create FAX
+        QBCustomerJSON.Fax fax = new QBCustomerJSON.Fax();
+        fax.FreeFormNumber = acc.Fax;
+        customer.Fax = fax;
+
+        //Create Primary Phone
+        QBCustomerJSON.PrimaryPhone phone = new QBCustomerJSON.PrimaryPhone ();
+        phone.FreeFormNumber = acc.Phone;
+        customer.PrimaryPhone = phone;
+
+        customer.Job = False;
+        customer.IsProject = False;
+        customer.DisplayName = acc.Name;
+
+        //Create Billing Address
+        QBCustomerJSON.BillAddr billAddy = new QBCustomerJSON.BillAddr();
+        billAddy.City = acc.BillingCity;
+        billAddy.Line1 = acc.BillingStreet;
+        billAddy.CountrySubDivisionCode = acc.BillingState;
+        billAddy.PostalCode = acc.BillingPostalCode;
+        billAddy.Lat = String.valueOf(acc.BillingLatitude);
+        billAddy.Long_x = String.valueOf(acc.BillingLongitude);
+        billAddy.Country = acc.BillingCountry;
+       // billAddy.CountrySubDivisionCode = acc.BillingCountry;
+        customer.BillAddr = billAddy;
+        return JSON.serialize(customer, True).replace('"Long_x":', '"Long":');
+ 
+    }
+    public static String  mapTaxRateData(buildertek__Billings__c SI){
+        
+        QBTaxCodeJSON tax = new QBTaxCodeJSON();
+        // String taxName = 'Tax - ' + string.valueOf(SI.buildertek__Tax_Rate__c);
+        // tax.TaxCode = 'Tax - ' + string.valueOf(SI.buildertek__Tax_Rate__c);	
+        tax.TaxCode = (SI.buildertek__Tax_Rate__c != null) 
+                ? 'Tax - ' + String.valueOf(SI.buildertek__Tax_Rate__c)
+                : 'Tax - 0.0000';
+	    tax.TaxRateDetails = new List<QBTaxCodeJSON.TaxRateDetails>();
+
+        QBTaxCodeJSON.TaxRateDetails taxrate = new QBTaxCodeJSON.TaxRateDetails();
+        taxrate.RateValue = (SI.buildertek__Tax_Rate__c != null) 
+        ? 'Tax - ' + String.valueOf(SI.buildertek__Tax_Rate__c)
+        : 'Tax - 0.0000';
+        taxrate.TaxApplicableOn = 'Sales';
+        taxrate.TaxAgencyId = '1';
+        taxrate.TaxRateName = (SI.buildertek__Tax_Rate__c != null) 
+        ? 'Tax - ' + String.valueOf(SI.buildertek__Tax_Rate__c)
+        : 'Tax - 0.0000';
+        tax.TaxRateDetails.add(taxrate);
+
+        return JSON.serialize(tax);
+    }
+
+    // Sales Inovice line associated with "Product and Service" in Quickbook....
+    public static String MapInvoiceLineToBatch(List<buildertek__Billable_Lines__c> SILine) {
+        try {
+            System.debug('\n in createProducts \n');
+            QBBatchReqJSON BatchItemRequest = new QBBatchReqJSON();
+            
+            for (buildertek__Billable_Lines__c item : SILine) {
+                String lineId = item.Id;
+                String LineName = item.buildertek__Item_Name__c;
+                Boolean taxable = true;
+                DateTime yourDate = Datetime.now();
+                Date invStartDate = Date.valueOf(yourDate.format('yyyy-MM-dd'));
+                System.debug('item.Unit_Price__c >> ' + item.Unit_Price__c);
+                Decimal UnitePrice = item.Unit_Price__c != null ? item.Unit_Price__c : 0;
+                Decimal Quantity = item.buildertek__Quantity__c != null ? item.buildertek__Quantity__c : 0;
+                BatchItemRequest.addBatchItem(
+                    String.valueOf(item.Id),
+                    true, // Set TrackQtyOnHand as needed
+                    LineName,
+                    Quantity,
+                    UnitePrice,
+                    // item.buildertek__Total__c,
+                    'Sales of Product Income',
+                    '79', // Assuming a fixed value for income account value
+                    invStartDate,
+                    'Inventory',
+                    taxable,
+                    'Test acc',
+                    '100',
+                    'Cost of Goods Sold',
+                    '80'
+                );
+            }
+            
+            // Now perform the API callout using QBBatchReqJSON class
+            // createInvoiceLines(BatchItemRequest);
+            return JSON.serialize(BatchItemRequest);
+        } catch (Exception e) {
+            System.debug('Exception in createProduct :: '  + e.getMessage());
+            return null;
+        }
+    }
+
+    public static String mapInvoiceDataBatch(QBIntegrationQueue_SIFlow.salesInvoiceFlow_Wrapper SI_Wrapper) {
+        try {
+            System.debug(' in mapInvoiceData method==> '+SI_Wrapper.lineIdsMap);
+            String invId = SI_Wrapper.SI.Id;
+            String invQBId = SI_Wrapper.SI.buildertek__QB_Id__c;
+            DateTime yourDate = Datetime.now();
+            System.debug('Current Time  : ' + Datetime.now());
+            System.debug('2 hours delay Time  : ' + Datetime.now().addHours(-8));
+            
+            Date txnDate = Date.valueOf(yourDate.format('yyyy-MM-dd'));
+            QBInvoiceJSON invoice = new QBInvoiceJSON();
+
+            if(SI_Wrapper.SI.buildertek__QB_Id__c != null && SI_Wrapper.SI.buildertek__QB_Id__c != ''){
+                invoice.Id = SI_Wrapper.SI.buildertek__QB_Id__c;
+                invoice.sparse = true;
+                if(SI_Wrapper.SyncToken == null){
+                    invoice.SyncToken = SI_Wrapper.SI.buildertek__QBO_SyncToken__c;
+                }
+                else {
+                    invoice.SyncToken = SI_Wrapper.SyncToken;
+                }
+            }
+            invoice.BillEmail = new QBInvoiceJSON.BillEmail();
+            invoice.BillEmail.Address = SI_Wrapper.acc.buildertek__Email_Address__c;
+
+            invoice.TotalAmt = SI_Wrapper.SI.buildertek__Total_Amount_Tax__c;
+            invoice.Balance = SI_Wrapper.SI.buildertek__Total_Amount_Tax__c;
+            invoice.TxnDate = txnDate;
+            invoice.Line = new List<QBInvoiceJSON.line>();
+    
+            // Iterate through the lineIdsMap to add line items to invoice
+            Integer lineNumber = 1;
+            for (String lineId : SI_Wrapper.lineIdsMap.keySet()) {
+                List<String> qbIdAndNameList = SI_Wrapper.lineIdsMap.get(lineId);
+                String qbId = '';
+                String qbName = '';
+                String qbTotal = '';
+                String qbQuantity = '';
+                String qbUnitPrice = '';
+                String qbTaxCode = '';
+
+                if (qbIdAndNameList != null) {
+                    qbId = qbIdAndNameList[0]; // Retrieve QuickBooks ID
+                    qbName = qbIdAndNameList[1]; // Retrieve QuickBooks Name
+                    qbTotal = qbIdAndNameList[2] != null ? qbIdAndNameList[2] : '0'; // Retrive Item Total Value(SubTotal)
+                    qbQuantity = qbIdAndNameList[3] != null ? qbIdAndNameList[3] : '0'; // Retrive Item Quantity
+                    qbUnitPrice = qbIdAndNameList[4] != null ? qbIdAndNameList[4] : '0'; // Retrive Unite Prices
+                    qbTaxCode = qbIdAndNameList[5]; // Retrieve Tax Code
+                }
+
+                QBInvoiceJSON.line Linee = new QBInvoiceJSON.line();
+                Linee.DetailType = 'SalesItemLineDetail';
+                Linee.Amount = Double.valueOf(qbTotal);
+                Linee.Id = string.ValueOf(lineNumber);
+                Linee.LineNum =lineNumber;
+                Linee.SalesItemLineDetail = new QBInvoiceJSON.SalesItemLineDetail();
+
+                
+                QBInvoiceJSON.SalesItemLineDetail SILD = new QBInvoiceJSON.SalesItemLineDetail();
+                SILD.ItemRef = new QBInvoiceJSON.ItemRef();
+                SILD.Qty = Double.valueOf(qbQuantity);
+                SILD.UnitPrice = Double.valueOf(qbUnitPrice); 
+                if(qbTaxCode == 'true'){
+                    SILD.TaxCodeRef = new QBInvoiceJSON.TaxCodeRef();
+                    SILD.TaxCodeRef.value = 'TAX';                    
+                }
+                
+                QBInvoiceJSON.ItemRef ItemRef = new QBInvoiceJSON.ItemRef();
+                ItemRef.name = qbName;
+                ItemRef.value = qbId; // Retrieve the line ID from the map
+
+                if(SI_Wrapper.taxCodeId != null){
+                    QBInvoiceJSON.TxnTaxDetail TaxDetail = new QBInvoiceJSON.TxnTaxDetail();
+                    QBInvoiceJSON.TxnTaxCodeRef taxCodeRef = new QBInvoiceJSON.TxnTaxCodeRef();
+                    taxCodeRef.value = SI_Wrapper.taxCodeId;
+    
+                    TaxDetail.TxnTaxCodeRef = taxCodeRef;
+                    invoice.TxnTaxDetail = TaxDetail;
+                }
+                
+                SILD.ItemRef = ItemRef;
+                Linee.SalesItemLineDetail = SILD;
+                invoice.Line.add(Linee);
+                
+                lineNumber++;
+            }
+            
+            invoice.CustomerRef = new QBInvoiceJSON.CustomerRef();
+            QBInvoiceJSON.CustomerRef customer = new QBInvoiceJSON.CustomerRef();
+            customer.value = SI_Wrapper.QBId;
+            invoice.CustomerRef = customer;
+
+            QBInvoiceJSON.SalesTermRef term = new QBInvoiceJSON.SalesTermRef();
+            term.value = SI_Wrapper.TermQBId;
+            invoice.SalesTermRef = term;
+            
+            // System.debug('Invoice request Body :: ' + JSON.serialize(invoice, True).replace('"Long_x":', '"Long":'));
+            
+            return JSON.serialize(invoice, True).replace('"Long_x":', '"Long":');
+        } catch (Exception e) {
+            System.debug('exception in mapInvoiceData :: ' + e.getMessage());
+            return null;
+        }
+    }
+    
+    public static string mapReceipt_PaymetData(QBIntegrationQueue_SIFlow.salesInvoiceFlow_Wrapper SI_Wrapper){
+        try {
+            String CustomerId = SI_Wrapper.QBId; 
+            buildertek__Receipt__c receipt =  SI_Wrapper.receipt;
+            String invoiceQBOID = SI_Wrapper.InvoiceQBId;
+
+            DateTime yourDate = Datetime.now();
+            Date txnDate = Date.valueOf(yourDate.format('yyyy-MM-dd'));
+
+            QBReceiptJSON QBPayment = new QBReceiptJSON();
+            System.debug('PAyment Amount :: ' + receipt.buildertek__Amount__c );
+
+            if(SI_Wrapper.receipt.buildertek__QB_Id__c != null && SI_Wrapper.receipt.buildertek__QB_Id__c != ''){
+                QBPayment.Id = SI_Wrapper.receipt.buildertek__QB_Id__c;
+                QBPayment.sparse = true;
+                if(SI_Wrapper.SyncToken == null){
+                    QBPayment.SyncToken = SI_Wrapper.receipt.buildertek__QBO_SyncToken__c;
+                }
+                else {
+                    QBPayment.SyncToken = SI_Wrapper.SyncToken;
+                }
+            }
+
+            if(receipt.buildertek__Amount__c == null ){
+                QBPayment.TotalAmt = 0;
+            }
+            else{
+                QBPayment.TotalAmt = receipt.buildertek__Amount__c;
+            }
+            QBPayment.TxnDate = txnDate;
+            QBPayment.CustomerRef = new QBReceiptJSON.CustomerRef();
+            QBPayment.Line = new list<QBReceiptJSON.Line>();  
+
+            QBReceiptJSON.CustomerRef QBPayment_cust = new QBReceiptJSON.CustomerRef();
+            QBPayment_cust.value = CustomerId;
+            QBPayment.CustomerRef = QBPayment_cust;
+
+            QBReceiptJSON.Line line = new QBReceiptJSON.Line();
+            line.Amount = receipt.buildertek__Amount__c;
+            line.LinkedTxn = new list<QBReceiptJSON.LinkedTxn>();
+
+            QBReceiptJSON.LinkedTxn linkedLine = new QBReceiptJSON.LinkedTxn();
+            linkedLine.TxnType = 'Invoice';
+            linkedLine.TxnId = invoiceQBOID;
+
+            line.LinkedTxn.add(linkedLine);
+            QBPayment.Line.add(line);
+
+            return JSON.serialize(QBPayment, True);
+        } catch (Exception e ) {
+            system.debug('error in mapReceipt_PaymetData >> ' + e.getMessage() +'\n'+ e );
+            return null;
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------------------
+
+    public static String mapVendorAccountData(QBIntegrationQueue.qbIntegration_Wrapper qb_wrapper){
+        Account acc = qb_wrapper.acc;
+        String accId = acc.Id;
+        QBVendorJSON Vendor = new QBVendorJSON();
+        
+        String AccountId = acc.Id;
+        //Map given account fields
+        // Vendor.CompanyName = acc.Name +' - '+AccountId.right(4).substring(0,4);
+        Vendor.CompanyName = acc.Name;
+        Vendor.Active = true;  
+
+        // If QB Id is Not Null, Update Vendor in QB Else Create New Vendor In QB.....
+        if(acc.buildertek__QB_Id__c != null && acc.buildertek__QB_Id__c != ''){
+            Vendor.Id = acc.buildertek__QB_Id__c;
+            if(qb_wrapper.SyncToken == null){
+                Vendor.SyncToken = acc.buildertek__QBO_SyncToken__c;
+            }
+            else {
+                Vendor.SyncToken = qb_wrapper.SyncToken;
+            }
+            Vendor.sparse = true;
+        }
+     
+        //Create Shipping address
+        QBVendorJSON.BillAddr BillAddr = new QBVendorJSON.BillAddr();
+        BillAddr.City = acc.BillingCity;
+        BillAddr.Line1 = acc.BillingStreet;
+        BillAddr.CountrySubDivisionCode = acc.BillingState;
+        BillAddr.PostalCode = acc.BillingPostalCode;
+        BillAddr.Lat = String.valueOf(acc.BillingLatitude);
+        BillAddr.Long_x = String.valueOf(acc.BillingLongitude);
+        BillAddr.CountrySubDivisionCode = acc.BillingCountry;
+        Vendor.BillAddr = BillAddr;
+
+        Vendor.PrintOnCheckName = acc.Name;
+
+        //Create Email Address
+        QBVendorJSON.PrimaryEmailAddr Addr = new QBVendorJSON.PrimaryEmailAddr();
+        Addr.Address = acc.buildertek__Email_Address__c;
+        Vendor.PrimaryEmailAddr = Addr;
+
+        //Create Primary Phone
+        QBVendorJSON.PrimaryPhone phone = new QBVendorJSON.PrimaryPhone ();
+        phone.FreeFormNumber = acc.Phone;
+        Vendor.PrimaryPhone = phone;
+        Vendor.DisplayName = acc.Name;
+
+        return JSON.serialize(Vendor, True).replace('"Long_x":', '"Long":');
+    }
+
+    // Line associated with "Product and Service" in Quickbook....
+    public static String MapItemDataToBatch(QBIntegrationQueue.qbIntegration_Wrapper qb_wrapper) {
+        try {
+            System.debug('\n in MapItemDataToBatch \n');
+
+            List<sObject> sObjectItemList = qb_wrapper.sObjectItemList ;
+            String SyncObjName = qb_wrapper.SyncObjName ;
+
+            QBBatchReqJSON BatchItemRequest = new QBBatchReqJSON();
+            List<sObject> ItemList = new List<sObject>();
+
+            Map<Id, String> NameMap = new Map<Id, String>();
+            Map<Id, Decimal> UnitPriceMap = new Map<Id, Decimal>();
+            Map<Id, Decimal> QuantityMap = new Map<Id, Decimal>();
+
+            for(sObject Item : sObjectItemList){
+                // Type conversation from sObject to Generic Object....
+                // Store Field Data Into Respective Map....
+                if(SyncObjName == 'buildertek__Purchase_Order__c'){
+                        buildertek__Purchase_Order_Item__c record = (buildertek__Purchase_Order_Item__c)Item;
+                        NameMap.put(record.Id, record.Name);
+                        UnitPriceMap.put(record.Id, record.buildertek__Unit_Price__c);
+                        QuantityMap.put(record.Id, record.buildertek__Quantity__c);
+                }
+                else if(SyncObjName == 'buildertek__Account_Payable__c'){
+                        buildertek__Account_Payable_Item__c record = (buildertek__Account_Payable_Item__c)Item;
+                        NameMap.put(record.Id, record.Name);
+                        UnitPriceMap.put(record.Id, record.buildertek__Unit_Price__c);
+                        QuantityMap.put(record.Id, record.buildertek__Quantity__c);
+                }
+                else if(SyncObjName == 'buildertek__Account_Payable_Clone__c'){
+                        buildertek__Account_Payable_Item_Clone__c record = (buildertek__Account_Payable_Item_Clone__c)Item;
+                        NameMap.put(record.Id, record.Name);
+                        UnitPriceMap.put(record.Id, record.buildertek__Unit_Price__c);
+                        QuantityMap.put(record.Id, record.buildertek__Quantity__c);
+                }
+                else if(SyncObjName == 'buildertek__Expense__c'){
+                    buildertek__Expense_Line__c record = (buildertek__Expense_Line__c)Item;
+                    String itemName = record.buildertek__Product_Description__c;
+                    NameMap.put(record.Id, itemName);
+                    UnitPriceMap.put(record.Id, record.buildertek__Price__c);
+                    QuantityMap.put(record.Id, record.buildertek__Quantity__c);
+            }
+            }
+            
+            // Creating a Batch
+            for (sObject item : sObjectItemList) {
+                Boolean taxable = true;
+                Boolean TrackQtyOnHand = true;
+                DateTime yourDate = Datetime.now();
+                Date invStartDate = Date.valueOf(yourDate.format('yyyy-MM-dd'));
+                // System.debug('item.Unit_Price__c >> ' + item.buildertek__Unit_Price__c	);
+                String Name = NameMap.get(item.Id);
+                Decimal UnitePrice = UnitPriceMap.get(item.Id) != null ? UnitPriceMap.get(item.Id) : 0;
+                Decimal Quantity = QuantityMap.get(item.Id) != null ? QuantityMap.get(item.Id) : 0;
+                BatchItemRequest.addBatchItem(
+                    String.valueOf(item.Id),
+                    TrackQtyOnHand, // Set TrackQtyOnHand as needed
+                    Name,
+                    Quantity,
+                    UnitePrice,
+                    // item.buildertek__Total__c,
+                    'Sales of Product Income',
+                    '79', // Assuming a fixed value for income account value
+                    invStartDate,
+                    'Inventory',
+                    taxable,
+                    'Test acc',
+                    '100',  // Assuming a fixed value for Asset account value
+                    'Cost of Goods Sold',
+                    '80'    // Assuming a fixed value for Expense account value
+                );
+            }
+            return JSON.serialize(BatchItemRequest);
+        } catch (Exception e) {
+            System.debug('Exception in MapItemDataToBatch :: '  + e.getMessage());
+            System.debug('Error in MapItemDataToBatch ..' + e.getMessage() + '\n' + e +'\n Exception line no : '+ e.getLineNumber() +'--->'+ e.getStackTraceString());
+            return null;
+        }
+    }
+
+    // Map Contractor Invoice Data or Payable Invoice Data......
+    public static String mapQBBillData(QBIntegrationQueue.qbIntegration_Wrapper qb_wrapper){
+        try {
+            System.debug(' in mapQBBillData method==> '+qb_wrapper.lineIdsMap);
+            sObject SOBJ = qb_wrapper.SObejctRecord;
+            boolean isCostCode = false;
+
+            Map<Id, List<String>> lineIdsMap = qb_wrapper.lineIdsMap;
+
+            String QBOID = null;
+            String QBSyncToken = null;
+            DateTime yourDate = Datetime.now();
+            Date txnDate = Date.valueOf(yourDate.format('yyyy-MM-dd'));
+            String Name = '';
+            Date dueDate = Date.valueOf(yourDate.format('yyyy-MM-dd'));
+
+            if(qb_wrapper.SyncObjName == 'buildertek__Account_Payable__c'){
+                buildertek__Account_Payable__c record = (buildertek__Account_Payable__c)SOBJ;
+                QBOID = record.buildertek__QB_Id__c;
+                QBSyncToken = record.buildertek__QBO_SyncToken__c;
+                System.debug('record.buildertek__QB_Line_Type__c :: ' + record.buildertek__QB_Line_Type__c);
+                if(record.buildertek__QB_Line_Type__c == 'Cost Codes'){
+                    isCostCode = true;
+                }
+
+                if(record.buildertek__Date_Received__c != null){
+                    System.debug('record.buildertek__Date_Received__c :: ' + record.buildertek__Date_Received__c);
+                    txnDate = record.buildertek__Date_Received__c;
+                }
+
+                if(record.buildertek__Due_Date__c != null){
+                    System.debug('record.buildertek__Due_Date__c :: ' + record.buildertek__Due_Date__c);
+                    dueDate = record.buildertek__Due_Date__c;
+                }
+
+
+                if(qb_wrapper.SyncToken == null){
+                    QBSyncToken = record.buildertek__QBO_SyncToken__c;
+                }
+                else {
+                    QBSyncToken = qb_wrapper.SyncToken;
+                }
+
+                Name = record.buildertek__Ref_No__c;
+            }
+            else if(qb_wrapper.SyncObjName == 'buildertek__Account_Payable_Clone__c'){
+                buildertek__Account_Payable_Clone__c record = (buildertek__Account_Payable_Clone__c)SOBJ;
+                QBOID = record.buildertek__QB_Id__c;
+                QBSyncToken = record.buildertek__QBO_SyncToken__c;
+
+                if(qb_wrapper.SyncToken == null){
+                    QBSyncToken = record.buildertek__QBO_SyncToken__c;
+                }
+                else {
+                    QBSyncToken = qb_wrapper.SyncToken;
+                }
+            }
+
+            QBBillReqJSON QbBill = new QBBillReqJSON();
+            if(QBOID != null && QBOID != ''){
+                QbBill.Id = QBOID;
+                QbBill.sparse = true;
+                QbBill.SyncToken = QBSyncToken;
+            }
+
+            if (Name != null) {
+                QbBill.DocNumber = Name;
+            }
+
+
+            if(qb_wrapper.DepartmentId != null){
+                QBBillReqJSON.DepartmentRef department = new QBBillReqJSON.DepartmentRef();
+                department.value = qb_wrapper.DepartmentId;
+                QbBill.DepartmentRef = department;
+            }
+
+            QBBillReqJSON.VendorRef vendor = new QBBillReqJSON.VendorRef();
+            vendor.value = qb_wrapper.VendorQBId;
+            QbBill.VendorRef = vendor;
+            QbBill.TxnDate = txnDate;
+
+            if(qb_wrapper.TermQBId != null){
+                QBBillReqJSON.SalesTermRef term = new QBBillReqJSON.SalesTermRef();
+                term.value = qb_wrapper.TermQBId;
+                QbBill.SalesTermRef = term;
+            }else{
+                QbBill.DueDate = dueDate;
+            }
+            
+            QbBill.Line = new list<QBBillReqJSON.Line>();
+            Integer lineNumber = 1;
+            for(String LineId : lineIdsMap.keySet()){
+                List<String> qbIdAndNameList = lineIdsMap.get(lineId);
+                String qbId = '';
+                String qbName = '';
+                String qbTotal = '';
+                String qbQuantity = '';
+                String qbUnitPrice = '';
+                
+                if (qbIdAndNameList != null) {
+                    qbId = qbIdAndNameList[0]; // Retrieve QuickBooks ID
+                    qbName = qbIdAndNameList[1]; // Retrieve QuickBooks Name
+                    qbTotal = qbIdAndNameList[2] != null ? qbIdAndNameList[2] : '0'; // Retrive Item Total Value(SubTotal)
+                    qbQuantity = qbIdAndNameList[3] != null ? qbIdAndNameList[3] : '0'; // Retrive Item Quantity
+                    qbUnitPrice = qbIdAndNameList[4] != null ? qbIdAndNameList[4] : '0'; // Retrive Unite Prices
+                }
+
+                System.debug('isCostCode :: ' + isCostCode);
+
+                if(isCostCode){
+
+                    QBBillReqJSON.Line Linee = new QBBillReqJSON.Line();
+                    Linee.DetailType = 'AccountBasedExpenseLineDetail';
+                    Linee.Amount = Double.valueOf(qbTotal);
+                    Linee.Id = string.ValueOf(lineNumber);
+                    Linee.Description = qbQuantity;
+
+
+                    QBBillReqJSON.AccountBasedExpenseLineDetail POLD = new QBBillReqJSON.AccountBasedExpenseLineDetail();
+                    POLD.AccountRef = new QBBillReqJSON.AccountRef();
+
+                    if(qbUnitPrice != null && qbUnitPrice != '0' ){
+                        String va = qb_wrapper.ClassMap.get(qbUnitPrice);
+                        System.debug('value :: ' + va);
+                        QBBillReqJSON.ClassRef cl = new QBBillReqJSON.ClassRef();
+                        cl.value = va;
+                        POLD.ClassRef = cl;
+                    }
+
+                    QBBillReqJSON.AccountRef AccountRef = new QBBillReqJSON.AccountRef();
+                    AccountRef.name = qbName;
+                    AccountRef.value = qbId; // Retrieve the line ID from the map
+
+                    POLD.AccountRef = AccountRef;
+                    Linee.AccountBasedExpenseLineDetail = POLD;
+
+                    QbBill.Line.add(Linee);
+
+                    lineNumber++;
+
+                }else{
+
+                QBBillReqJSON.Line Linee = new QBBillReqJSON.Line();
+                Linee.DetailType = 'ItemBasedExpenseLineDetail';
+                Linee.Amount = Double.valueOf(qbTotal);
+                Linee.Id = string.ValueOf(lineNumber);
+                // Linee.ItemBasedExpenseLineDetail = new QBPOJSON.ItemBasedExpenseLineDetail();
+                
+                QBBillReqJSON.ItemBasedExpenseLineDetail POLD = new QBBillReqJSON.ItemBasedExpenseLineDetail();
+                POLD.ItemRef = new QBBillReqJSON.ItemRef();
+                POLD.Qty = Double.valueOf(qbQuantity);
+                POLD.UnitPrice = Double.valueOf(qbUnitPrice);
+                
+                QBBillReqJSON.ItemRef ItemRef = new QBBillReqJSON.ItemRef();
+                ItemRef.name = qbName;
+                ItemRef.value = qbId; // Retrieve the line ID from the map
+                
+                POLD.ItemRef = ItemRef;
+                Linee.ItemBasedExpenseLineDetail = POLD;
+                QbBill.Line.add(Linee);
+                
+                lineNumber++;
+                }
+                
+            }
+    
+            return JSON.serialize(QbBill);
+        } catch (Exception e) {
+            System.debug('Exception in mapQBBillData :: '  + e.getMessage());
+            System.debug('Error in mapQBBillData ..' + e.getMessage() + '\n' + e +'\n Exception line no : '+ e.getLineNumber() +'--->'+ e.getStackTraceString());
+
+            return null;
+        }
+    }
+
+    public static String mapCreditMemoDataBatch(QBIntegrationQueue.qbIntegration_Wrapper qb_wrapper) {
+        try {
+            System.debug('in mapCreditMemoDataBatch method');
+    
+            // Retrieve main object record
+            sObject SOBJ = qb_wrapper.SObejctRecord;
+            
+            // Create the top-level map for the VendorCredit object
+            Map<String, Object> vendorCredit = new Map<String, Object>();
+
+            // APAccountRef assignment
+            Map<String, String> apAccountRef = new Map<String, String>();
+            apAccountRef.put('name', 'Accounts Payable');
+            apAccountRef.put('value', '166');
+    
+            // SyncToken assignment
+            
+            String QBSyncToken = qb_wrapper.SyncToken != null ? qb_wrapper.SyncToken : (String) SOBJ.get('buildertek__QBO_SyncToken__c');
+            String QBId = (String)SOBJ.get('buildertek__QB_Id__c');
+            if(QBId != null && QBId != ''){
+                vendorCredit.put('Id', QBId);
+                vendorCredit.put('sparse', true);
+                vendorCredit.put('SyncToken', QBSyncToken);
+            }
+    
+            // VendorRef assignment
+            Map<String, String> vendorRef = new Map<String, String>();
+            vendorRef.put('value', qb_wrapper.VendorQBId);
+            
+    
+            // Set TxnDate
+            DateTime yourDate = Datetime.now();
+            Date txnDate = Date.valueOf(yourDate.format('yyyy-MM-dd'));
+            if (SOBJ.get('buildertek__Credit_Memo_Date__c') != null) {
+                txnDate = (Date) SOBJ.get('buildertek__Credit_Memo_Date__c');
+            }
+    
+            // Prepare line items
+            List<Map<String, Object>> lineItems = new List<Map<String, Object>>();
+            Integer lineNumber = 1;
+            for (String lineId : qb_wrapper.lineIdsMap.keySet()) {
+                List<String> lineDetails = qb_wrapper.lineIdsMap.get(lineId);
+                String accountId = lineDetails[0]; // Account ID
+                String accountName = lineDetails[1]; // Account Name
+                String amount = lineDetails[2]; // Amount
+                String description = lineDetails[3]; // Description
+    
+                Map<String, Object> lineItem = new Map<String, Object>();
+                lineItem.put('DetailType', 'AccountBasedExpenseLineDetail');
+                lineItem.put('Amount', Double.valueOf(amount));
+                lineItem.put('Id', String.valueOf(lineNumber));
+                lineItem.put('Description', description);
+    
+                // AccountBasedExpenseLineDetail map
+                Map<String, Object> accountDetail = new Map<String, Object>();
+                Map<String, String> accountRef = new Map<String, String>();
+                accountRef.put('value', accountId);
+                accountRef.put('name', accountName);
+                accountDetail.put('AccountRef', accountRef);
+
+                accountDetail.put('BillableStatus', 'NotBillable');
+    
+                lineItem.put('AccountBasedExpenseLineDetail', accountDetail);
+                lineItems.add(lineItem);
+                lineNumber++;
+            }
+            
+            vendorCredit.put('TxnDate', txnDate);
+            vendorCredit.put('APAccountRef', apAccountRef);
+            vendorCredit.put('VendorRef', vendorRef);
+            vendorCredit.put('Line', lineItems);
+    
+            // Serialize the map to JSON string
+            return JSON.serialize(vendorCredit);
+
+            // return '{"Line":[{"Id":"1","Amount":90.00,"DetailType":"AccountBasedExpenseLineDetail","AccountBasedExpenseLineDetail":{"AccountRef":{"value":"223","name":"5001.2Costofgoodssold:Subcontractors"},"BillableStatus":"NotBillable"}}],"VendorRef":{"value":"70","name":"testacc12"},"APAccountRef":{"value":"166","name":"AccountsPayable"}}';
+            
+        } catch (Exception e) {
+            System.debug('Exception in mapCreditMemoDataBatch :: ' + e.getMessage());
+            System.debug('Error in mapCreditMemoDataBatch ..' + e.getMessage() + '\n' + e + '\n Exception line no : ' + e.getLineNumber() + '--->' + e.getStackTraceString());
+            return null;
+        }
+    }
+    
+
+    public static String mapPODataBatch(QBIntegrationQueue.qbIntegration_Wrapper qb_wrapper) {
+        try {
+            System.debug(' in mapPODataBatch method');
+            buildertek__Purchase_Order__c po = qb_wrapper.PO;
+            Map<Id, List<String>> lineIdsMap = qb_wrapper.lineIdsMap;
+
+            String invId = po.Id;
+            String invQBId = po.buildertek__QB_Id__c;
+            DateTime yourDate = Datetime.now();
+            Date txnDate = Date.valueOf(yourDate.format('yyyy-MM-dd'));
+
+            QBPOJSON purchaseorder = new QBPOJSON();
+
+            if(po.buildertek__QB_Id__c != null && po.buildertek__QB_Id__c != ''){
+                purchaseorder.Id = po.buildertek__QB_Id__c;
+                purchaseorder.sparse = true;
+                purchaseorder.SyncToken = po.buildertek__QBO_SyncToken__c;
+
+                if(qb_wrapper.SyncToken == null){
+                    purchaseorder.SyncToken = po.buildertek__QBO_SyncToken__c;
+                }
+                else {
+                    purchaseorder.SyncToken = qb_wrapper.SyncToken;
+                }
+            }
+            
+            purchaseorder.TotalAmt = po.buildertek__PO_Total__c;
+            purchaseorder.TxnDate = txnDate;
+            purchaseorder.Line = new List<QBPOJSON.line>();
+    
+            // Iterate through the lineIdsMap to add line items to purchaseorder
+            Integer lineNumber = 1;
+            for (String lineId : lineIdsMap.keySet()) {
+                List<String> qbIdAndNameList = lineIdsMap.get(lineId);
+                String qbId = '';
+                String qbName = '';
+                String qbTotal = '';
+                String qbQuantity = '';
+                String qbUnitPrice = '';
+
+                if (qbIdAndNameList != null) {
+                    qbId = qbIdAndNameList[0]; // Retrieve QuickBooks ID
+                    qbName = qbIdAndNameList[1]; // Retrieve QuickBooks Name
+                    qbTotal = qbIdAndNameList[2] != null ? qbIdAndNameList[2] : '0'; // Retrive Item Total Value(SubTotal)
+                    qbQuantity = qbIdAndNameList[3] != null ? qbIdAndNameList[3] : '0'; // Retrive Item Quantity
+                    qbUnitPrice = qbIdAndNameList[4] != null ? qbIdAndNameList[4] : '0'; // Retrive Unite Prices
+                }
+
+                QBPOJSON.line Linee = new QBPOJSON.line();
+                Linee.DetailType = 'ItemBasedExpenseLineDetail';
+                Linee.Amount = Double.valueOf(qbTotal);
+                Linee.Id = string.ValueOf(lineNumber);
+                // Linee.LineNum =lineNumber;
+                Linee.ItemBasedExpenseLineDetail = new QBPOJSON.ItemBasedExpenseLineDetail();
+                
+                QBPOJSON.ItemBasedExpenseLineDetail POLD = new QBPOJSON.ItemBasedExpenseLineDetail();
+                POLD.ItemRef = new QBPOJSON.ItemRef();
+                POLD.Qty = Double.valueOf(qbQuantity);
+                POLD.UnitPrice = Double.valueOf(qbUnitPrice);
+                
+                QBPOJSON.ItemRef ItemRef = new QBPOJSON.ItemRef();
+                ItemRef.name = qbName;
+                ItemRef.value = qbId; // Retrieve the line ID from the map
+                
+                POLD.ItemRef = ItemRef;
+                Linee.ItemBasedExpenseLineDetail = POLD;
+                purchaseorder.Line.add(Linee);
+                
+                lineNumber++;
+            }
+            
+            QBPOJSON.VendorRef vendor = new QBPOJSON.VendorRef();
+            vendor.value = qb_wrapper.VendorQBId;
+            purchaseorder.VendorRef = vendor;
+            
+            return JSON.serialize(purchaseorder, True).replace('"Long_x":', '"Long":');
+        } catch (Exception e) {
+            System.debug('exception in mappurchaseorderData :: ' + e.getMessage());
+            return null;
+        }
+    }
+
+    public static String mapExpenseDataBatch(QBIntegrationQueue.qbIntegration_Wrapper qb_wrapper) {
+        try {
+            buildertek__Expense__c expense = qb_wrapper.expense;
+            Map<Id, List<String>> lineIdsMap = qb_wrapper.lineIdsMap;
+
+            String QBOID = null;
+            String QBSyncToken = null;
+            String paymenttype = null;
+            String vendorname = expense.buildertek__Vendor__r.Name;
+            String vendortype = expense.buildertek__Vendor__r.buildertek__BT_Account_Type__c;
+            DateTime yourDate = Datetime.now();
+            Date txnDate = Date.valueOf(yourDate.format('yyyy-MM-dd'));
+            boolean isCostCode = false;
+
+            if(expense.buildertek__QB_Line_Type__c == 'Cost Codes'){
+                isCostCode = true;
+            }
+    
+            QBOID = expense.buildertek__QB_Id__c;
+            QBSyncToken = expense.buildertek__QBO_SyncToken__c;
+            paymenttype = 'CreditCard';
+    
+            QBExpenseJSON QbExpense = new QBExpenseJSON();
+            if (QBOID != null && QBOID != '') {
+                QbExpense.Id = QBOID;
+                QbExpense.sparse = true;
+                QbExpense.SyncToken = QBSyncToken;
+                if(qb_wrapper.SyncToken == null){
+                    QbExpense.SyncToken = QBSyncToken;
+                }
+                else {
+                    QbExpense.SyncToken = qb_wrapper.SyncToken;
+                }
+            }
+            QbExpense.PaymentType = paymenttype;
+            QbExpense.TxnDate = txnDate;
+
+            QBExpenseJSON.AccountRef AccRef2 = new QBExpenseJSON.AccountRef();
+            AccRef2.name = qb_wrapper.AccRef2Name; // Replace with the actual value
+            AccRef2.value = qb_wrapper.AccRef2Value;
+            QbExpense.AccountRef = AccRef2;
+
+            QBExpenseJSON.EntityRef Vendorinfo = new QBExpenseJSON.EntityRef();
+            Vendorinfo.name = vendorname; // Replace with the actual value
+            Vendorinfo.value = qb_wrapper.VendorQBId;
+            Vendorinfo.type = vendortype;
+            QbExpense.EntityRef = Vendorinfo;
+
+            QBExpenseJSON.PaymentMethodRef paymethod = new QBExpenseJSON.PaymentMethodRef();
+            paymethod.value = qb_wrapper.paymentmethodId;
+            QbExpense.PaymentMethodRef = paymethod;
+    
+            // QbExpense.CustomField = new List<String>{'CustomField1', 'CustomField2'};
+    
+            // Assuming you want to set values for PurchaseEx
+            // QbExpense.PurchaseEx = new QBExpenseJSON.PurchaseEx();
+            // QbExpense.PurchaseEx.any_y = new List<QBExpenseJSON.any_y>();
+            // QBExpenseJSON.any_y anyY = new QBExpenseJSON.any_y();
+            // anyY.value = new QBExpenseJSON.value();
+            // anyY.value.Value = 'AnyValue'; // Replace with actual value
+            // QbExpense.PurchaseEx.any_y.add(anyY);
+    
+            QbExpense.Line = new List<QBExpenseJSON.Line>();
+            Integer lineNumber = 1;
+            for (String LineId : lineIdsMap.keySet()) {
+                List<String> qbIdAndNameList = lineIdsMap.get(LineId);
+    
+                String qbId = '';
+                String qbName = '';
+                String qbTotal = '';
+                String qbQuantity = '';
+                String qbUnitPrice = '';
+    
+                if (qbIdAndNameList != null) {
+                    qbId = qbIdAndNameList[0]; // Retrieve QuickBooks ID
+                    qbName = qbIdAndNameList[1]; // Retrieve QuickBooks Name
+                    qbTotal = qbIdAndNameList[2] != null ? qbIdAndNameList[2] : '0'; // Retrive Item Total Value(SubTotal)
+                    qbQuantity = qbIdAndNameList[3] != null ? qbIdAndNameList[3] : '0'; // Retrive Item Quantity
+                    qbUnitPrice = qbIdAndNameList[4] != null ? qbIdAndNameList[4] : '0'; // Retrive Unite Prices
+                }
+
+                if(isCostCode){
+                    QBExpenseJSON.Line Linee = new QBExpenseJSON.Line();
+                    Linee.DetailType = 'AccountBasedExpenseLineDetail';
+                    Linee.Amount = Double.valueOf(qbTotal);
+                    Linee.Id = String.valueOf(lineNumber);
+                    Linee.Description = qbQuantity;
+    
+                    QBExpenseJSON.AccountBasedExpenseLineDetail POLD = new QBExpenseJSON.AccountBasedExpenseLineDetail();
+                    POLD.AccountRef = new QBExpenseJSON.AccountRef();
+                    POLD.AccountRef.name = qbName;
+                    POLD.AccountRef.value = qbId;
+    
+                    Linee.AccountBasedExpenseLineDetail = POLD;
+                    QbExpense.Line.add(Linee);
+    
+                    lineNumber++;
+                }else{
+                    QBExpenseJSON.Line Linee = new QBExpenseJSON.Line();
+                    Linee.DetailType = 'ItemBasedExpenseLineDetail';
+                    Linee.Amount = Double.valueOf(qbTotal);
+                    Linee.Id = String.valueOf(lineNumber);
+                    Linee.ItemBasedExpenseLineDetail = new QBExpenseJSON.ItemBasedExpenseLineDetail();
+        
+                    QBExpenseJSON.ItemBasedExpenseLineDetail POLD = new QBExpenseJSON.ItemBasedExpenseLineDetail();
+                    POLD.ItemRef = new QBExpenseJSON.ItemRef();
+                    POLD.Qty = Double.valueOf(qbQuantity);
+                    POLD.UnitPrice = Double.valueOf(qbUnitPrice);
+        
+                    POLD.ItemRef.name = qbName;
+                    POLD.ItemRef.value = qbId;
+        
+                    // Assuming you want to set values for TaxCodeRef
+                    POLD.TaxCodeRef = new QBExpenseJSON.TaxCodeRef();
+                    POLD.TaxCodeRef.value = 'NON'; // Replace with the actual value
+        
+                    // Assuming you want to set other fields in AccountBasedExpenseLineDetail
+                    POLD.BillableStatus = 'NotBillable'; // Replace with the actual value
+        
+                    Linee.ItemBasedExpenseLineDetail = POLD;
+                    QbExpense.Line.add(Linee);
+        
+                    lineNumber++;
+
+                }
+            }
+    
+            // Serialize the final QBExpense object to JSON
+            return JSON.serialize(QbExpense).replace('"any_y":', '"any":');
+        } catch (Exception e) {
+            System.debug('Exception in mapQBBillData :: ' + e.getMessage());
+            return null;
+        }
+    }    
+
+    public static String mapPMData(String pmname){
+
+        QBPMCreateJSON paymentMethod = new QBPMCreateJSON();
+        paymentMethod.Name = pmname;
+        paymentMethod.Active = true;
+
+        return JSON.serialize(paymentMethod);
+    }
+}

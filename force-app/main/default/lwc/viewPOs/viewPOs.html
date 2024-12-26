@@ -1,0 +1,233 @@
+<template>
+    <div class="mass-void-pos-container">
+        <div if:true={isLoading} class="spinner-container">
+            <lightning-spinner alternative-text="Loading" size="large" variant="brand"></lightning-spinner>
+        </div>
+        
+        <div class="search-and-button">
+            <div class="search-container">
+                <div class="slds-grid slds-gutters slds-p-bottom_small">
+                    <div class="slds-col">
+                        <lightning-combobox 
+                            label="Status" 
+                            placeholder="Select Status" 
+                            value={statusSearch}
+                            options={statusOptions}
+                            onchange={handleStatusSearch}
+                            variant="label-stacked">
+                        </lightning-combobox>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-input 
+                            type="search" 
+                            label="PO #" 
+                            placeholder="Search PO #" 
+                            value={pONumberSearch}
+                            onchange={handlePONumberSearch}
+                            variant="label-stacked">
+                        </lightning-input>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-input 
+                            type="search" 
+                            label="Description" 
+                            placeholder="Search Description" 
+                            value={descriptionSearch}
+                            onchange={handleDescriptionSearch}
+                            variant="label-stacked">
+                        </lightning-input>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-input 
+                            type="search" 
+                            label="Project" 
+                            placeholder="Search Project" 
+                            value={projectSearch}
+                            onchange={handleProjectSearch}
+                            variant="label-stacked">
+                        </lightning-input>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-input 
+                            type="search" 
+                            label="Vendor" 
+                            placeholder="Search Vendor" 
+                            value={vendorSearch}
+                            onchange={handleVendorSearch}
+                            variant="label-stacked">
+                        </lightning-input>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-input 
+                            type="search" 
+                            label="Cost Code" 
+                            placeholder="Search Cost Code" 
+                            value={costCodeSearch}
+                            onchange={handleCostCodeSearch}
+                            variant="label-stacked">
+                        </lightning-input>
+                    </div>
+                </div>
+            </div>
+            <!-- <lightning-button label="Update Unit Cost" variant="brand" onclick={handlePOs}></lightning-button> -->
+        </div>
+        <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+            <thead>
+                <tr class="slds-line-height_reset">
+                    <th class="slds-size_xx-small" scope="col">
+                        <div class="slds-truncate" title="Expand"></div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="PO #">PO#</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="Description">Description</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="Project">Project</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="Vendor">Vendor</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="Cost Code">Cost Code</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="Status">Status</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="Total">Total</div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <template for:each={shownpoData} for:item="po">
+                    <tr key={po.id} class={po.rowClass}>
+                        <td class="slds-size_xx-small">
+                            <button class="accordion-button" onclick={handleRowToggle} data-id={po.id}>
+                            <template if:false={po.isExpanded}>
+                                <svg viewBox="0 0 16 16" class="expanded-icon" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3.13523 6.15803C3.3241 5.95657 3.64052 5.94637 3.84197 6.13523L7.5 9.56464L11.158 6.13523C11.3595 5.94637 11.6759 5.95657 11.8648 6.15803C12.0536 6.35949 12.0434 6.67591 11.842 6.86477L7.84197 10.6148C7.64964 10.7951 7.35036 10.7951 7.15803 10.6148L3.15803 6.86477C2.95657 6.67591 2.94637 6.35949 3.13523 6.15803Z"/>
+                                </svg>
+                            </template>
+                            <template if:true={po.isExpanded}>
+                                <svg viewBox="0 0 16 16" class="collapsed-icon" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3.13523 9.842C3.3241 10.0435 3.64052 10.0537 3.84197 9.86477L7.5 6.43536L11.158 9.86477C11.3595 10.0536 11.6759 10.0434 11.8648 9.842C12.0536 9.64052 12.0434 9.3241 11.842 9.13523L7.84197 5.38523C7.64964 5.20489 7.35036 5.20489 7.15803 5.38523L3.15803 9.13523C2.95657 9.3241 2.94637 9.64052 3.13523 9.842Z"/>
+                                </svg>
+                            </template>
+                            </button>
+                        </td>
+                        <td>
+                            <a href="javascript:void(0);" onclick={navigateToPO} data-id={po.id}>{po.name}</a>
+                        </td>
+                        <td class="truncateValue" style="max-width: 8rem;">{po.description}</td>
+                        <td class="truncateValue" style="max-width: 8rem;">{po.projectName}</td>
+                        <td>{po.vendorName}</td>
+                        <td><p class="truncateValue" style="max-width: 8rem;">{po.costCodeDescription}</p></td>
+                        <td>
+                            <span class={po.statusClass} style={po.statusStyle}>{po.status}</span>
+                        </td>
+                        <!-- <td>
+                            <span class={po.statusClass} style={po.statusStyle}>{po.status}</span>
+                        </td> -->
+                        <td>
+                            <lightning-formatted-number value={po.total} format-style="currency"
+                                currency-code={orgCurrency} currency-display-as="code"></lightning-formatted-number>
+                        </td>
+                    </tr>
+                    <!-- PO Line Items -->
+                    <template if:true={po.isExpanded}>
+                        <tr key={po.lineItemsKey} class="po-line-items">
+                            <td colspan="8">
+                                <div class="line-items-container">
+                                    <table class="slds-table slds-table_bordered slds-table_cell-buffer nested-table">
+                                        <thead>
+                                            <tr class="slds-line-height_reset">
+                                                <th scope="col" style="width: 3%;"></th>
+                                                <th scope="col">Name</th>
+                                                <th scope="col">Quantity</th>
+                                                <th scope="col">Unit Price</th>
+                                                <th scope="col">Tax</th>
+                                                <th scope="col">Total Amount (Tax)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template for:each={po.lineItems} for:item="line">
+                                                <tr key={line.Id}>
+                                                    <td style="width: 3%;"></td>
+                                                    <td class="truncateValue" style="max-width: 8rem;">
+                                                        <a href="javascript:void(0);" onclick={navigateToLineItem} data-id={line.Id}>{line.Name}</a>
+                                                    </td>
+                                                    <td>
+                                                        <lightning-formatted-number value={line.buildertek__Quantity__c}>
+                                                        </lightning-formatted-number>
+                                                    </td>
+                                                    <td>
+                                                        <lightning-formatted-number value={line.buildertek__Unit_Price__c} 
+                                                            format-style="currency" currency-code={orgCurrency}>
+                                                        </lightning-formatted-number>
+                                                    </td>
+                                                    <td>
+                                                        <lightning-formatted-number value={line.buildertek__Tax__c} 
+                                                            format-style="percent-fixed" minimum-fraction-digits="2" maximum-fraction-digits="2"></lightning-formatted-number>
+                                                    </td>
+                                                    <td>
+                                                        <lightning-formatted-number value={line.buildertek__Total_Amount_Tax__c} 
+                                                            format-style="currency" currency-code={orgCurrency}>
+                                                        </lightning-formatted-number>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                            <template if:false={po.lineItems.length}>
+                                                <tr>
+                                                    <td colspan="6" class="slds-text-align_center">
+                                                        No line are available.
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                </template>
+            </tbody>
+        </table>
+        <div class="paginationDiv slds-var-p-around_medium">
+            <div class="btnCover">
+                <div class="pagination-container">
+                    <button class="pagination-button" disabled={isFirstPage} onclick={handlePrevious}>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="52" width="52" viewBox="0 0 520 520"
+                            fill="#fff">
+                            <path
+                                d="M342 477 134 272c-6-6-6-16 0-22L342 45c6-6 16-6 22 0l22 22c6 6 6 16 0 22L221 250c-6 6-6 16 0 22l163 161c6 6 6 16 0 22l-22 22c-5 5-14 5-20 0z" />
+                        </svg>
+                        Back
+                    </button>
+
+                    <template for:each={pageNumbers} for:item="page">
+                        <template if:false={page.isEllipsis}>
+                            <button key={page.number} data-id={page.number} class={page.className}
+                                onclick={handlePageChange}>
+                                {page.number}
+                            </button>
+                        </template>
+                        <template if:true={page.isEllipsis}>
+                            <span key={page.number} class="pagination-ellipsis">...</span>
+                        </template>
+                    </template>
+
+                    <button class="pagination-button" disabled={isLastPage} onclick={handleNext}>
+                        Next
+                        <svg xmlns="http://www.w3.org/2000/svg" height="52" width="52" viewBox="0 0 520 520"
+                            fill="#fff">
+                            <path
+                                d="m179 44 207 205c6 6 6 16 0 22L179 476c-6 6-16 6-22 0l-22-22c-6-6-6-16 0-22l163-161c6-6 6-16 0-22L136 88c-6-6-6-16 0-22l22-22c6-5 15-5 21 0z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

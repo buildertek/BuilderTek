@@ -1,0 +1,47 @@
+<aura:component controller="BudgetPage"
+    implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader"
+    access="global">
+
+    <aura:attribute name="recordId" type="String" />
+
+    <aura:html tag="style">
+        .slds-modal__container {
+        max-width: 52rem !important;
+        width: 52% !important;
+        }
+        .slds-modal__content {
+        height: unset !important;
+        max-height: unset !important;
+        box-shadow: none !important;
+        padding: 0rem !important;
+        }
+        .slds-modal__close{
+        display:block !important;
+        }
+        .slds-p-around--medium{
+        padding: 0rem !important;
+        }
+        .cuf-content{
+        padding: 0rem !important;
+        }
+    </aura:html>
+
+    <div class="slds-modal__content">
+        <div class="slds slds-scope">
+            <header class="slds-modal__header">
+                <div class="" id="header" style="font-size:17px;">
+                    Lock Budget Confirmation
+                </div>
+            </header>
+            <div class="slds-modal__content slds-text-align_center" id="modal-content-id-1" style="margin: 1rem;">
+                <p>Are you sure you want to lock the budget?</p>
+            </div>
+            <footer class="slds-modal__footer">
+                <lightning:button variant="neutral" label="Cancel" title="Cancel" onclick="{! c.handleCancel }" />
+                <lightning:button variant="brand" label="Lock Budget" title="Lock Budget"
+                    onclick="{! c.handleLockBudget }" />
+            </footer>
+        </div>
+    </div>
+    <c:BT_Spinner />
+</aura:component>

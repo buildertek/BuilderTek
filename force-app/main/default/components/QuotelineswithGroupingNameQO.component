@@ -1,0 +1,87 @@
+<apex:component controller="QuotelineswithGroupingNameQOController" access="global">
+    <apex:attribute type="id" name="relatedTo_id" assignTo="{!relatedToId}" description="RelatedTo" access="global" />
+    <apex:attribute type="string" name="querystringfields" assignTo="{!querystring}" description="querystring" access="global" />
+    <apex:attribute type="string" name="quote_Option" assignTo="{!quoteOption}" description="quoteOption" access="global" />
+    <apex:attribute type="string" name="tableFooterFields" assignTo="{!tableFooterFieldsName}" description="tableFooterFields" access="global"/>
+
+    <table style="width: 100%;text-align: left;border-spacing: 0;">
+        <thead style="background: {!tableHeaderDynamicColor}">
+            <tr>
+                <apex:repeat value="{!lableslst}" var="labelname">
+                    <th style="{!if(OR(labelname == 'Name', labelname == 'buildertek__Item_Name__c', labelname == 'buildertek__Description__c', labelname == 'buildertek__Notes__c', labelname == 'buildertek__Product__c'),
+                                'font-size: 15px; border: 1px solid #ccc; padding: 5px 15px; text-align: left;',
+                                'font-size: 15px; border: 1px solid #ccc; padding: 5px 15px; text-align: right')}">
+                        {!sortlablevalueMap[labelname]}
+                    </th>
+                </apex:repeat>
+            </tr>
+        </thead>
+        <tbody>
+            <apex:repeat value="{!wrapperlst}" var="quoteItem">
+                <tr style="line-height: 1.6; {!if(quoteItem.groupName == null, 'display:none',If((quoteItem.groupName == 'No Grouping'),'display:none',''))}">
+                    <td style="font-size: 14px;padding: 5px 15px;color:white;text-align: left;border: 1px solid #ccc; background-color:{!tableHeaderDynamicColor}">
+                        <apex:outputText value="{!quoteItem.groupName}" />
+                    </td>
+                    <td style="font-size: 14px;padding: 5px 15px;color:white;text-align: right;border: 1px solid #ccc; background-color:{!tableHeaderDynamicColor}" colspan="{!colomspanvalue}">
+                        <apex:outputText value="{0, number, $###,###,###,##0.00}">
+                            <apex:param value="{!quoteItem.listTotal}" />
+                        </apex:outputText>
+                    </td>
+                </tr>
+                <apex:repeat value="{!quoteItem.quotelineitemlist}" var="quotelinesrecs">
+                    <tr style="{!if(quotelinesrecs.quoteItem.Status__c == 'Reject', 'background-color: lightgrey;text-decoration: line-through;','')}
+                                {!if(quotelinesrecs.quoteItem.Not_Customer_Visible__c == TRUE,'display: none;','')}
+                                {!if(NOT(quotelinesrecs.isIncluded), 'color: red;', '')}">
+                        <apex:repeat value="{!lableslst}" var="apiname">
+                            <td style="{!if(OR(apiname == 'Name', apiname == 'buildertek__Item_Name__c', apiname == 'buildertek__Description__c', apiname == 'buildertek__Notes__c', apiname == 'buildertek__Product__c'),
+                                            'font-size: 14px;padding: 5px 15px;text-align: left;border: 1px solid  #ccc;',
+                                            'font-size: 14px;padding: 5px 15px;text-align: right;border: 1px solid  #ccc;')}">
+                                <apex:outputfield rendered="{!apiname != 'buildertek__Item_Name__c' || NOT(ISBLANK(quotelinesrecs.quoteItem[apiname]))}"
+                                    value="{!quotelinesrecs.quoteItem[apiname]}" />
+                                <apex:outputfield rendered="{!apiname == 'buildertek__Item_Name__c' && ISBLANK(quotelinesrecs.quoteItem['buildertek__Item_Name__c'])}"
+                                    value="{!quotelinesrecs.quoteItem.Name}" />
+                            </td>
+                        </apex:repeat>
+                    </tr>
+                </apex:repeat>
+            </apex:repeat>
+        </tbody>
+    </table>
+    <table style="width: 100%;text-align: left;border-spacing: 0;">
+        <tr>
+            <td style="font-size: 15px;padding: 5px 15px;font-weight: bold;text-align: right;color:black;border: 1px solid  #ccc;">Subtotal: </td>
+            <td style="font-size: 14px;padding: 5px 15px;text-align: right;color:black;border:1px solid #ccc; width: 26.8%;">
+                <apex:outputText value="{0, number, USD ###,###,###,##0.00}">
+                    <apex:param value="{!subTotal}" />
+                </apex:outputText>
+            </td>
+        </tr>
+        <apex:repeat value="{!dynamicFields}" var="field">
+            <tr>
+                <td style="font-size: 15px;padding: 5px 15px;font-weight: bold;text-align: right;color:black;border: 1px solid #ccc;">{!field.label}:</td>
+                <td style="font-size: 14px;padding: 5px 15px;text-align: right;color:black;border: 1px solid #ccc; width: 26.8%;">
+                    <!-- Format as currency with USD -->
+                    <apex:outputText rendered="{!field.fieldType == 'CURRENCY'}" value="{0, number, USD ###,###,###,##0.00}">
+                        <apex:param value="{!quote[field.apiName]}" />
+                    </apex:outputText>
+                    
+                    <!-- Format as percentage -->
+                    <apex:outputText rendered="{!field.fieldType == 'PERCENT'}" value="{0, number, #,##0.00'%'}">
+                        <apex:param value="{!quote[field.apiName]}" />
+                    </apex:outputText>
+                    
+                    <!-- Default output for other field types -->
+                    <apex:outputField rendered="{!field.fieldType != 'CURRENCY' && field.fieldType != 'PERCENT'}" value="{!quote[field.apiName]}" />
+                </td>
+            </tr>
+        </apex:repeat>
+        <tr>
+            <td style="font-size: 15px;padding: 5px 15px;font-weight: bold;text-align: right;color:black;border:  1px solid  #ccc;">Quote Total: </td>
+            <td style="font-size: 14px;padding: 5px 15px;text-align: right;background: #ddd;color: black;font-weight: bold;border:  1px solid  #ccc; width: 26.8%;">
+                <apex:outputText value="{0, number, USD ###,###,###,##0.00}">
+                    <apex:param value="{!grandTotal}" />
+                </apex:outputText>
+            </td>
+        </tr>
+    </table>
+</apex:component>

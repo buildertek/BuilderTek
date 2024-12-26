@@ -1,0 +1,246 @@
+<template>
+    <template if:true={isLoading}>
+        <div class="spinner-container">
+            <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+        </div>
+    </template>
+
+    <template if:true={isInitialScreen}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close custom-close-button" title="Close"
+                        onclick={handleCancel}>
+                        <lightning-icon icon-name="utility:close" alternative-text="close" size="small"
+                            class="custom-close-icon"></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 class="slds-text-heading_medium">Modify Budget</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <lightning-select name="Select an option" label="Choose Any One Type" value={selectedOption}
+                        options={availableOptions} onchange={handleOptionChange}></lightning-select>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button class="slds-m-right_small" label="Cancel"
+                        onclick={handleCancel}></lightning-button>
+                    <lightning-button label="Next" variant="brand" onclick={handleNext}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <template if:true={showExistingBudgetModification}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container" style="width: 70%;">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close custom-close-button" title="Close"
+                        onclick={handleCancel}>
+                        <lightning-icon icon-name="utility:close" alternative-text="close" size="small"
+                            class="custom-close-icon"></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Existing Budget
+                        Modification Sheets</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_none" style="max-height: 80%; overflow-y: auto;">
+                    <table class="slds-table slds-table_bordered slds-table_cell-buffer custom-table">
+                        <thead class="sticky-header">
+                            <tr>
+                                <th scope="col" class="checkbox-column">
+                                </th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Account</th>
+                                <th scope="col">Approver</th>
+                                <th scope="col">Total Amount Transferred</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template if:true={budgetModificationSheets}>
+                                <template for:each={budgetModificationSheets} for:item="record">
+                                    <tr key={record.Id}>
+                                        <td>
+                                            <input type="radio" name="budgetModification" data-id={record.Id}
+                                                onchange={handleRadioClick} />
+                                        </td>
+                                        <td class="truncate">{record.Name}</td>
+                                        <td class="truncate">{record.Account}</td>
+                                        <td class="truncate">{record.Approver}</td>
+                                        <td>
+                                            <lightning-formatted-number
+                                                value={record.buildertek__Total_Amount_Transferred__c}
+                                                format-style="currency" currency-code={orgCurrency}
+                                                currency-display-as="code">
+                                            </lightning-formatted-number>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </template>
+                            <template if:false={budgetModificationSheets}>
+                                <tr>
+                                    <td colspan="5">
+                                        <div class="slds-text-color_error slds-text-align_center">No records found</div>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button class="slds-m-right_small" variant="neutral" label="Back"
+                        onclick={backtoChooseOption}></lightning-button>
+                    <lightning-button class="slds-m-right_small" variant="neutral" label="Cancel"
+                        onclick={handleCancel}></lightning-button>
+                    <lightning-button variant="brand" label="Next" data-name="Next"
+                        onclick={showBMSTable}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <template if:true={showCreateNewBudgetModification}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container" style="width: 70%;">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close custom-close-button" title="Close"
+                        onclick={handleCancel}>
+                        <lightning-icon icon-name="utility:close" alternative-text="close" size="small"
+                            class="custom-close-icon"></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 class="slds-text-heading_medium">Create New Budget Modification Sheet</h2>
+                </header>
+
+                <div class="slds-modal__content slds-p-around_medium">
+                    <lightning-record-edit-form object-api-name="buildertek__Budget_Modification_Sheet__c" onsuccess={handleSuccess} onerror={handleError}>
+
+                        <lightning-messages></lightning-messages>
+
+                        <div class="slds-grid slds-gutters slds-wrap">
+                            <div class="slds-col slds-size_1-of-2 slds-p-around_x-small">
+                                <lightning-input-field field-name="buildertek__Description__c">
+                                </lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2 slds-p-around_x-small">
+                                <lightning-input-field field-name="buildertek__Project__c">
+                                </lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2 slds-p-around_x-small">
+                                <lightning-input-field field-name="buildertek__Date_Approved__c">
+                                </lightning-input-field>
+                            </div>
+
+                            <div class="slds-col slds-size_1-of-2 slds-p-around_x-small">
+                                <lightning-input-field field-name="buildertek__Account__c">
+                                </lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2 slds-p-around_x-small">
+                                <lightning-input-field field-name="buildertek__Date_Submitted__c">
+                                </lightning-input-field>
+                            </div>
+                            <div class="slds-col slds-size_1-of-2 slds-p-around_x-small">
+                                <lightning-input-field field-name="buildertek__Approver__c">
+                                </lightning-input-field>
+                            </div>
+                        </div>
+
+                    </lightning-record-edit-form>
+                </div>
+
+                <footer class="slds-modal__footer">
+                    <lightning-button class="slds-m-right_small" variant="neutral" label="Back"
+                        onclick={backtoChooseOption}>
+                    </lightning-button>
+                    <lightning-button class="slds-m-right_small" variant="neutral" label="Cancel"
+                        onclick={handleCancel}></lightning-button>
+                    <lightning-button variant="brand" label="Save" onclick={handleSave}>
+                    </lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <template if:true={isShowBMSTable}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close custom-close-button" title="Close"
+                        onclick={handleCancel}>
+                        <lightning-icon icon-name="utility:close" alternative-text="close" size="small"
+                            class="custom-close-icon"></lightning-icon>
+                    </button>
+                    <h2 class="slds-text-heading_medium">Create Budget Modifications</h2>
+                </header>
+                <div class="slds-modal__content sticky-header-form">
+                    <div class="field-row header-row">
+                        <div class="field-container">From</div>
+                        <div class="field-container">To</div>
+                        <div class="field-container">Allowable Transfer Amount</div>
+                        <div class="field-container">Transfer Amount</div>
+                        <div class="field-container">Notes</div>
+                        <div class="field-container"></div>
+                    </div>
+
+                    <div class="budget-lines-container">
+                        <template for:each={budgetModificationLines} for:item="line" for:index="index">
+                            <div key={line.key} class="field-row">
+                                <div class="field-container">
+                                    <lightning-select name="from" value={line.fromBudgetLine}
+                                        options={line.fromOptions} onchange={handleBudgetLineChange}
+                                        data-index={index} data-field="from" variant="label-hidden">
+                                    </lightning-select>
+                                </div>
+                                <div class="field-container">
+                                    <lightning-select name="to" value={line.toBudgetLine} 
+                                        options={line.toOptions} onchange={handleBudgetLineChange} 
+                                        data-index={index} data-field="to"
+                                        variant="label-hidden">
+                                    </lightning-select>
+                                </div>
+                                <div class="field-container">
+                                    <div class="allowable-amount">
+                                        <lightning-formatted-number value={line.allowableModification}
+                                            format-style="currency" currency-code={orgCurrency} variant="label-hidden">
+                                        </lightning-formatted-number>
+                                    </div>
+                                </div>
+                                <div class="field-container">
+                                    <lightning-input type="number" step="0.01" value={line.transferAmount}
+                                        max={line.allowableModification} onchange={handleTransferAmountChange}
+                                        data-index={index} variant="label-hidden">
+                                    </lightning-input>
+                                </div>
+                                <div class="field-container">
+                                    <lightning-textarea value={line.notes} onchange={handleNotesChange}
+                                        data-index={index} variant="label-hidden">
+                                    </lightning-textarea>
+                                </div>
+                                <div class="field-container">
+                                    <lightning-button-icon icon-name="utility:delete" alternative-text="Delete"
+                                        variant="border-filled" class="delete-button" onclick={handleDeleteLine}
+                                        data-index={index}>
+                                    </lightning-button-icon>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="slds-m-around_medium">
+                        <lightning-button label="Add New Line" onclick={handleAddLine}
+                            variant="neutral"></lightning-button>
+                    </div>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button class="slds-m-right_small" variant="neutral" label="Cancel"
+                        onclick={handleCancel}></lightning-button>
+                    <lightning-button variant="brand" label="Save"
+                        onclick={createBudgetModificationDetails}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

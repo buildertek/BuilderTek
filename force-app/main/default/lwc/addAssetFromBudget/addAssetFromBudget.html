@@ -1,0 +1,111 @@
+<template>
+    <template if:true={isLoading}>
+        <div class="slds-spinner_container slds-is-fixed" style="position:fixed;z-index:100000">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="status">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+                <div class="custom-loading-text">
+                    <b>Processing, Please Wait</b>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+        <div class="slds-modal__container slds-modal__container_custom">
+            <div class="c-container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close custom-close-button" title="Close" onclick={closeAddAsset}>
+                        <lightning-icon icon-name="utility:close" alternative-text="close" size="small" class="custom-close-icon" ></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 class="slds-text-heading_medium slds-hyphenate">Add Assets</h2>
+                </header>
+                <div class="slds-modal__content content-scrollable">
+                    <table class="slds-table slds-table_bordered slds-table_cell-buffer custom-table">
+                        <thead class="sticky-header">
+                            <tr class="slds-text-title_caps">
+                                <th scope="col" class="slds-truncate checkbox-column"></th>
+                                <th scope="col">
+                                    <div class="slds-truncate">Asset Name</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate">Asset History #</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate">Project</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate">Date on Job</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate">Date off Job</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate">Hours Used</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate">Hourly Cost</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate">Total Cost</div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={assetRecordList} for:item="item" for:index="index">
+                                <tr key={item.Id}>
+                                    <td class="checkbox-column">
+                                        <lightning-input type="checkbox" checked={item.Selected} data-id={item.Id} onchange={checkAsset}></lightning-input>
+                                    </td>
+                                    <td class="slds-truncate">
+                                        {item.buildertek__Asset_Manager__r.Name}
+                                    </td>
+                                    <td class="slds-truncate">
+                                        {item.Name}
+                                    </td>
+                                    <td class="slds-truncate">
+                                        {item.buildertek__Project__r.Name}
+                                    </td>
+                                    <td class="slds-truncate">
+                                        {item.buildertek__Date_on_Job__c}
+                                    </td>
+                                    <td class="slds-truncate">
+                                        {item.buildertek__Date_off_Job__c}
+                                    </td>
+                                    <td class="slds-truncate">
+                                        {item.buildertek__Hours_Used__c}
+                                    </td>
+                                    <td>
+                                        <lightning-formatted-number value={item.buildertek__Cost__c}
+                                            format-style="currency" currency-code={currencycode} currency-display-as="code">
+                                        </lightning-formatted-number>
+                                    </td>
+                                    <td>
+                                        <lightning-formatted-number value={item.buildertek__Total_Cost__c}
+                                            format-style="currency" currency-code={currencycode} currency-display-as="code">
+                                        </lightning-formatted-number>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template if:false={assetRecordList}>
+                                <tr>
+                                    <td colspan="9" style="text-align: center; line-height: 10rem; font-size: 18px;">
+                                        No Records Found
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+
+                <footer class="slds-modal__footer modal-footer">
+                    <lightning-button variant="neutral" label="Cancel" onclick={closeAddAsset}></lightning-button>
+                    <lightning-button variant="brand" label="Save" onclick={UpdateAsset}></lightning-button>
+                </footer>
+            </div>
+        </div>
+    </section>
+    <div class="slds-backdrop slds-backdrop_open"></div>
+</template>

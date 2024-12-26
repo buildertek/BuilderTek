@@ -1,0 +1,15 @@
+<apex:page controller="CreatePDFController" contentType="application/pdf" cache="true">
+    <script>
+        // Function to trigger PDF download
+        function downloadPDF() {
+            var blob = new Blob(['{!pdfBlob}'], { type: 'application/pdf' });
+            var link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = 'generated_pdf.pdf';
+            link.click();
+        }
+
+        // Call the downloadPDF function when the page loads
+        window.onload = downloadPDF;
+    </script>
+</apex:page>

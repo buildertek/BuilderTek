@@ -1,0 +1,258 @@
+.THIS .custom-loading-text {
+    transform: rotate(-90deg);
+    position: absolute;
+    top: -0.5rem;
+    left: 1rem;
+    white-space: nowrap;
+    font-size: 20px;
+}
+.THIS .leftClass{
+    
+    text-align:left;
+}
+
+.THIS .rightClass{
+    
+    text-align:right;
+}
+
+.THIS .iconClr svg{
+	fill:red;
+}
+
+.THIS .my-icon svg{
+	fill:blue;
+}
+
+.THIS .expand-icon{
+	height : 18px;
+    width : 18px;
+}
+
+.THIS .Mainexpand-icon{
+	height : 25px;
+    width : 25px;
+}
+
+.THIS .firstCol{
+    width: 30px;
+}
+
+.THIS tr:hover > td{
+    background: initial !important;
+    box-shadow: initial !important;
+}
+
+.THIS tr:hover > th{
+    box-shadow: initial !important;
+}
+
+.THIS .tHeader{
+    background: #0176d3; 
+    color:#fff;
+    line-height: 3;
+}
+
+.THIS .subHeader{
+    font-weight: 900; 
+    background: #0176d3; 
+    color:#fff;
+}
+
+.THIS .subData{
+    border-left:  1px solid #fff; 
+}
+.THIS .orderedRow{
+    background:  #ffffff;
+}
+/* .THIS .slds-input{
+    padding-right: 0px !important;
+} */
+.THIS .rename_div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    /* gap: 13px; */
+}
+.THIS .rename_input {
+    width: 70%;
+    /* margin-bottom: 23px; */
+}
+.THIS .right {
+    cursor: pointer;
+    width: 24px;
+    height: 25px;
+    /* background-color: #6699CC; */
+    margin: 22px 2px;
+    margin-bottom: 0px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.THIS .wrong {
+    cursor: pointer;
+    width: 24px;
+    height: 25px;
+    /* background-color: #455a64; */
+    margin: 22px 2px;
+    margin-bottom: 0px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.THIS .h1cls:hover{
+    cursor: pointer;
+}
+.THIS .tdcls{
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+}
+.THIS .wrongs {
+    cursor: pointer;
+    width: 24px;
+    height: 25px;
+    /* background-color: #ff0000; */
+    margin: 22px 2px;
+    margin-bottom: 0px;
+    margin-top: 5px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.THIS .slds-select {
+    width: 100%;
+}
+
+.THIS .slds-input {
+    width: 100%;
+}
+
+.THIS .slds-table:not(.slds-no-row-hover) tbody tr:hover>th{
+    background-color: #0176d3;
+    color: white;
+}
+
+.THIS .slds-modal__container {
+    width: 85vw !important;
+    max-width: none;
+}
+
+.THIS .popUpHeader {
+    background-color: #0070d2;
+    color: #fff;
+    padding: 1rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.THIS .POTable .slds-table thead th {
+    font-size: 14px;
+    font-weight: bold;
+    text-align: left;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #ddd;
+    text-transform: uppercase;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.THIS .POTable .slds-table tbody td {
+    padding: 5px 1.5rem;
+}
+
+.THIS .slds-card__body.slds-scrollable {
+    padding: 0;
+    max-height: 450px;
+}
+
+.THIS .slds-modal__content {
+    padding: 0;
+}
+
+.THIS .status-clr-div {
+    width: 145px;
+    height: 26px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF; /* default color */
+}
+
+/* Background color based on status using custom attributes */
+.THIS .status-clr-div[data-status="Ordered"] {
+    background-color: #aec811;
+    color: white; /* Override the color if necessary */
+}
+
+.THIS .status-clr-div[data-status="Open"] {
+    background-color: #00CA4E;
+    color: white;
+}
+
+.THIS .status-clr-div[data-status="Canceled"] {
+    background-color: rgba(235, 9, 49, 0.902);
+    color: white;
+}
+
+.THIS .status-clr-div[data-status="Vendor Accepted"] {
+    background-color: #0176d3;
+    color: white;
+}
+
+.THIS .status-clr-div[data-status="Approved"] {
+    background-color: grey;
+    color: white;
+}
+
+.THIS .status-clr-div[data-status="Partially Paid"] {
+    background-color: #a095e1;
+    color: white;
+}
+
+.THIS .status-clr-div[data-status="Vendor Rejected"] {
+    background-color: #2b455f;
+    color: white; /* Override the color if necessary */
+}
+
+.THIS .status-clr-div[data-status="Paid"] {
+    background-color: #9a55ae;
+    color: white;
+}
+
+.THIS .status-clr-div[data-status="Completed"] {
+    background-color: #71c195;
+    color: white;
+}
+
+.THIS .status-clr-div[data-status="Ready for Approval"] {
+    background-color: #ADDFFF;
+    color: white;
+}
+
+.THIS .status-clr-div[data-status="Lien Release Accepted"] {
+    background-color: #f6cd05; 
+    color: white;
+}
+
+.THIS .status-clr-div[data-status="Pending"] {
+    background-color: #f6057d; 
+    color: white;
+}
+
+.THIS th .white-icon{
+    color: white;
+    cursor: pointer;
+}
+
+.THIS .truncateValue{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

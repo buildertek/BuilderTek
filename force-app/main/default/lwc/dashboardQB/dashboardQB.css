@@ -1,0 +1,17 @@
+.button-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1%; /* Ensures a consistent gap between buttons */
+}
+
+.button {
+    flex-grow: 1; /* Each button will grow to take up equal space */
+    flex-basis: 0; /* Prevents buttons from shrinking too much */
+    text-align: center; /* Centers the button label */
+}
+
+/* Target the internal HTML button element inside lightning-button */
+.button::part(button) {
+    width: 100%;
+    box-sizing: border-box; /* Ensures padding is included in the width calculation */
+}

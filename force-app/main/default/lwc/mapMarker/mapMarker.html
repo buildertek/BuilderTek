@@ -1,0 +1,78 @@
+<template>
+    <div class="slds-card slds-card_boundary container">
+        <div class="slds-card__header slds-grid slds-grid_vertical-align-center slds-p-around_medium">
+            <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                <div class="slds-media__figure">
+                    <lightning-icon icon-name="standard:location" alternative-text="Project Locations"
+                        title="Project Locations" size="medium"></lightning-icon>
+                </div>
+                <div class="slds-media__body">
+                    <h2 class="slds-card__header-title">
+                        <span class="slds-text-heading_medium slds-truncate">Project Locations</span>
+                    </h2>
+                </div>
+            </header>
+        </div>
+        <div class="slds-card__body slds-card__body_inner">
+            <div class="slds-grid slds-gutters slds-wrap">
+                <div class="slds-col slds-size_1-of-1">
+                    <div class="slds-form-element slds-m-bottom_small">
+                        <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_left-right">
+                            <lightning-icon icon-name="utility:search" size="x-small"
+                                class="slds-icon slds-input__icon slds-input__icon_left"></lightning-icon>
+                            <input type="search" id="Project-search" class="slds-input" placeholder="Search Projects"
+                                onkeyup={handleSearch} />
+                            <button class="slds-button slds-button_icon slds-input__icon slds-input__icon_right"
+                                title="Clear" onclick={clearSearch}>
+                                <lightning-icon icon-name="utility:clear" size="x-small"
+                                    alternative-text="Clear search"></lightning-icon>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- <div class="slds-box slds-box_xx-small slds-scrollable_y" style="height: 750px;">
+                        <ul class="slds-has-dividers_bottom-space">
+                            <template if:true={filteredProjects.length}>
+                                <template for:each={filteredProjects} for:item="Project">
+                                    <li key={Project.value} class="slds-item slds-p-around_xx-small"
+                                        onclick={handleProjectSelect} data-id={Project.value}>
+                                        <div class="slds-media slds-media_center">
+                                            <div class="slds-media__figure">
+                                                <lightning-icon icon-name="custom:custom24" alternative-text="Project"
+                                                    size="small"></lightning-icon>
+                                            </div>
+                                            <div class="slds-media__body">
+                                                <h3 class="slds-text-heading_small slds-truncate" title={Project.title}>
+                                                    {Project.title}</h3>
+                                                <p class="slds-text-body_small slds-truncate"
+                                                    title={Project.description}>
+                                                    {Project.description}</p>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </template>
+                            </template>
+                            <template if:false={filteredProjects.length}>
+                                <p>No projects found.</p>
+                            </template>
+                        </ul>
+                    </div> -->
+                </div>
+                <div class="slds-col slds-size_1-of-1">
+                    <div class="slds-box slds-box_xx-small slds-m-bottom_medium">
+                        <lightning-map map-markers={filteredProjects} markers-title="Project Locations"
+                            list-view="visible" selected-marker-value={selectedProjectId}
+                            onmarkerselect={handleMarkerSelect} zoom-level="6">
+                        </lightning-map>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div if:true={isLoading} class="slds-is-relative slds-p-around_xx-large">
+            <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+        </div>
+        <div if:true={error} class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error"
+            role="alert">
+            <h2>Error loading Project data. Please try again later or contact support.</h2>
+        </div>
+    </div>
+</template>

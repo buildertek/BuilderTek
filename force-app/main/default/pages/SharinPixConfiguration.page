@@ -1,0 +1,16 @@
+<apex:page controller="SharinPixConfigController" sidebar="false" lightningStylesheets="true">
+    <apex:slds />
+    <apex:form >
+        <apex:pageBlock mode="maindetail">
+            <apex:pageMessages />
+            <apex:pageblocksection >
+                <apex:inputcheckbox value="{!sharinPixValue}" label="SharinPix Function" />
+                <apex:inputtext value="{!sharinPixPreSubToken}" label="SharinPix Pre Sub Token" />
+                <apex:inputtext value="{!sharinPixPostSubToken}" label="SharinPix Post Sub Token" />
+                <center>
+                    <apex:commandButton value="Save" id="onCreateChangeOrderonOverage" styleClass="slds-button slds-button_brand" action="{!onCreateemailaddress}"></apex:commandButton>
+                </center>
+            </apex:pageblocksection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

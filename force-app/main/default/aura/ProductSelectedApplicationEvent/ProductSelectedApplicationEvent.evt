@@ -1,0 +1,4 @@
+<!-- ProductSelectedApplicationEvent.evt -->
+<aura:event type="APPLICATION">
+    <aura:attribute name="product" type="Product2"/>
+</aura:event>

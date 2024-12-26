@@ -1,0 +1,52 @@
+<aura:component
+    implements="force:appHostable,flexipage:availableForAllPageTypes,force:hasSObjectName,flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader,lightning:isUrlAddressable"
+    access="global" controller="createVoidPOController">
+
+    <lightning:workspaceAPI aura:id="workspace" />
+    <aura:attribute name="voidReason" type="String" default="" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+
+    <!-- <div>
+        <lightning:textarea class="label-style" aura:Id="voidReason" value="{!v.voidReason}" label="Void Reason"
+            required="true" />
+
+        <div class="slds-m-around_small slds-p-top_large slds-text-align_center">
+            <lightning:button class="slds-button slds-button_outline-brand slds-m-right_medium" label="cancel"
+                onclick="{!c.cancelProcess}" />
+            <lightning:button class="slds-button slds-button_brand" label="Save" onclick="{!c.saveProcess}" />
+        </div>
+
+    </div> -->
+
+
+    <ltng:require styles="{!$Resource.MOdalPreviewWidth52}" />
+    <header class="slds-modal__header">
+        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate heading">Create VoidPO</h2>
+    </header>
+    <div class="slds-modal__content" id="modal-content-id-1">
+        <div class="model-content">
+            <div class="slds-p-around_medium" style="background-color:white;">
+                <lightning:textarea class="label-style" aura:Id="voidReason" value="{!v.voidReason}" label="Void Reason"
+                    required="true" />
+            </div>
+        </div>
+        <footer aura:id="footer" class="slds-modal__footer">
+            <lightning:button class="slds-button slds-button_outline-brand" label="Cancel"
+                onclick="{!c.cancelProcess}" />
+            <lightning:button class="slds-button slds-button_brand" label="Save" onclick="{!c.saveProcess}" />
+        </footer>
+    </div>
+
+
+    <c:BT_Spinner />
+
+    <!-- <center>
+        <img alt="Creating all po's." src="{!$Resource.gearsloading}" style="height:150px !important;" />
+        <br />
+        <div style="margin-block: 10px;">
+            <p>Please don't leave this page until PO's are created.</p>
+        </div>
+    </center> -->
+
+</aura:component>

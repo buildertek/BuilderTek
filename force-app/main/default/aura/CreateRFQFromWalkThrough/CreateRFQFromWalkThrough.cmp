@@ -1,0 +1,170 @@
+<aura:component controller="CreateRFQFromWalkThroughController"
+	implements="force:appHostable,force:lightningQuickActionWithoutHeader,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes"
+	access="global">
+	<!-- <aura:attribute name="recordId" type="Id"/> -->
+	<aura:attribute name="optionSelected" type="Boolean" default="false" />
+	<aura:attribute name="statusOptions" type="List" default="[]" />
+
+	<aura:attribute name="initialLoad" type="Boolean" default="true" />
+	<aura:attribute name="missingSection" type="Boolean" default="false" />
+	<aura:attribute name="missingTradeType" type="Boolean" default="false" />
+	<aura:attribute name="missingCostCode" type="Boolean" default="false" />
+	<aura:attribute name="walkThroughLines" type="List" default="[]" />
+	<aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+	<lightning:notificationsLibrary aura:id="notifLib" />
+	<aura:handler name="onSelectEvt" event="c:BT_LookupEvent" action="{!c.handleLookUpEvent}" />
+	<aura:handler name="oClearRecordEvent" event="c:BT_LightningLookupEvent" action="{!c.clearSelectedHandler}" />
+
+	<aura:html tag="style">
+		.slds-modal__content {
+		height: unset !important;
+		max-height: unset !important;
+		}
+
+		.slds-modal__container {
+		max-width: 72rem !important;
+		width: 100% !important;
+		}
+
+		.cuf-content {
+		padding: 0rem !important;
+		}
+
+		.slds-p-around_medium {
+		padding: 0rem !important;
+		}
+
+		.slds-p-around--medium {
+		padding: 0rem !important;
+		}
+
+		.lookup .slds-form-element__label {
+		display: none !important;
+		}
+
+		.slds-form-element_stacked{
+		margin-bottom: 0px !important;
+		}
+		.slds-modal__close {
+		position: relative;
+		top: 0;
+		right: 0;
+		}
+
+		.buildertekBT_LightningLookup.mainDiv {
+		padding-top: 7%;
+		}
+
+		.slds-modal__close:not(.custom-close-button) {
+		display: none !important;
+		}
+	</aura:html>
+
+	<div class="slds-modal slds-fade-in-open">
+		<div class="slds-modal__container">
+			<header class="slds-modal__header">
+				<button class="slds-button slds-button_icon slds-modal__close custom-close-button" title="Close"
+					onclick="{!c.handleCancel}">
+					<lightning:icon iconName="utility:close" size="small" alternativeText="close" />
+					<span class="slds-assistive-text">Close</span>
+				</button>
+				<h2 class="slds-text-heading_medium slds-hyphenate" style="text-align: center;">
+					<aura:if isTrue="{!v.missingCostCode}">Add Cost Code</aura:if>
+					<aura:if isTrue="{!v.missingSection}">Add Section</aura:if>
+					<aura:if isTrue="{!v.missingTradeType}">Add Trade Type</aura:if>
+					<aura:if isTrue="{!not(v.missingCostCode || v.missingSection || v.missingTradeType)}">
+						Create RFQ
+					</aura:if>
+				</h2>
+			</header>
+
+			<div class="slds-modal__content slds-p-around_medium">
+				<aura:if isTrue="{!v.initialLoad}">
+					<aura:if isTrue="{!v.optionSelected}">
+						<div aura:id="progressbar">
+							<center>
+								<img alt="Creating a new RFQ record." src="{!$Resource.gearsloading}"
+									style="height:150px !important;" />
+								<br />
+								Creating a new RFQ <br /> Please don't leave this page until RFQ is created.
+							</center>
+						</div>
+						<aura:set attribute="else">
+							<div style="margin: 25px 35px;">
+								<lightning:combobox aura:id="selectItem" name="Grouping Options"
+									label="Grouping Options" placeholder="Select an Option" value="new"
+									onchange="{!c.handleOptionSelected}" options="{!v.statusOptions}" />
+							</div>
+						</aura:set>
+					</aura:if>
+
+					<aura:set attribute="else">
+						<table class="slds-table slds-table_bordered slds-table_cell-buffer">
+							<thead>
+								<tr class="slds-line-height_reset">
+									<th scope="col">
+										<div class="slds-truncate" title="Walk Through Lines #">Walk Through Lines #
+										</div>
+									</th>
+									<th scope="col">
+										<div class="slds-truncate" title="Description">Description</div>
+									</th>
+									<th scope="col">
+										<div class="slds-truncate" title="Field">
+											<aura:if isTrue="{!v.missingCostCode}">Cost Code</aura:if>
+											<aura:if isTrue="{!v.missingSection}">Section</aura:if>
+											<aura:if isTrue="{!v.missingTradeType}">Trade Type</aura:if>
+										</div>
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								<aura:iteration items="{!v.walkThroughLines}" var="walkThroughLine" indexVar="index">
+									<tr class="slds-hint-parent">
+										<td>{!walkThroughLine.Name}</td>
+										<td class="truncateValue"
+											data-full-text="{!walkThroughLine.buildertek__Description__c}"
+											title="{!walkThroughLine.buildertek__Description__c}">
+											{!walkThroughLine.buildertek__Description__c}
+										</td>
+										<td style="max-width: 13rem; min-width: 13rem;" class="lookup">
+											<aura:if isTrue="{!v.missingCostCode}">
+												<c:BT_LookupFields selectedRecordId=""
+													childObjectName="buildertek__Walk_Through_Line_Items__c"
+													index="{!index}" fieldName="buildertek__BT_Cost_Code__c"
+													record="{!walkThroughLine}"
+													callingCmpName="CreateRFQFromWalkThrough" />
+											</aura:if>
+											<aura:if isTrue="{!v.missingSection}">
+												<c:BT_LookupFields selectedRecordId=""
+													childObjectName="buildertek__Walk_Through_Line_Items__c"
+													index="{!index}" fieldName="buildertek__BT_Category__c"
+													record="{!walkThroughLine}"
+													callingCmpName="CreateRFQFromWalkThrough" />
+											</aura:if>
+											<aura:if isTrue="{!v.missingTradeType}">
+												<c:BT_LookupFields selectedRecordId=""
+													childObjectName="buildertek__Walk_Through_Line_Items__c"
+													index="{!index}" fieldName="buildertek__Trade_Type__c"
+													record="{!walkThroughLine}"
+													callingCmpName="CreateRFQFromWalkThrough" />
+											</aura:if>
+										</td>
+									</tr>
+								</aura:iteration>
+							</tbody>
+						</table>
+					</aura:set>
+				</aura:if>
+			</div>
+
+			<footer class="slds-modal__footer">
+				<lightning:button label="Cancel" onclick="{!c.handleCancel}" class="slds-m-right_x-small" />
+				<aura:if isTrue="{!not(v.initialLoad)}">
+					<lightning:button variant="brand" label="Save" onclick="{!c.handleSave}" />
+				</aura:if>
+			</footer>
+		</div>
+	</div>
+	<c:BT_Spinner />
+</aura:component>

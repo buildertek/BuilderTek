@@ -1,0 +1,4 @@
+<!-- PricebookSelectedEvent.evt -->
+<aura:event type="COMPONENT">
+    <aura:attribute name="pricebook" type="Pricebook2"/>
+</aura:event>

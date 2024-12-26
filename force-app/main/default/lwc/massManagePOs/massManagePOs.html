@@ -1,0 +1,288 @@
+<template>
+    <div class="mass-void-pos-container">
+        <div if:true={isLoading} class="spinner-container">
+            <lightning-spinner alternative-text="Loading" size="large" variant="brand"></lightning-spinner>
+        </div>
+        
+        <div class="search-and-button">
+            <div class="search-container">
+                <div class="slds-grid slds-gutters slds-p-bottom_small">
+                    <!-- <div class="slds-col">
+                        <lightning-combobox 
+                            label="Status" 
+                            placeholder="Select Status" 
+                            value={statusSearch}
+                            options={statusOptions}
+                            onchange={handleStatusSearch}
+                            variant="label-stacked">
+                        </lightning-combobox>
+                    </div> -->
+                    <div class="slds-col">
+                        <lightning-input 
+                            type="search" 
+                            label="PO #" 
+                            placeholder="Search PO #" 
+                            value={pONumberSearch}
+                            onchange={handlePONumberSearch}
+                            variant="label-stacked">
+                        </lightning-input>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-input 
+                            type="search" 
+                            label="Description" 
+                            placeholder="Search Description" 
+                            value={descriptionSearch}
+                            onchange={handleDescriptionSearch}
+                            variant="label-stacked">
+                        </lightning-input>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-input 
+                            type="search" 
+                            label="Project" 
+                            placeholder="Search Project" 
+                            value={projectSearch}
+                            onchange={handleProjectSearch}
+                            variant="label-stacked">
+                        </lightning-input>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-input 
+                            type="search" 
+                            label="Vendor" 
+                            placeholder="Search Vendor" 
+                            value={vendorSearch}
+                            onchange={handleVendorSearch}
+                            variant="label-stacked">
+                        </lightning-input>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-input 
+                            type="search" 
+                            label="Cost Code" 
+                            placeholder="Search Cost Code" 
+                            value={costCodeSearch}
+                            onchange={handleCostCodeSearch}
+                            variant="label-stacked">
+                        </lightning-input>
+                    </div>
+                    <div class="slds-col" style="padding-top: 22px;">
+                        <lightning-button label="Update Unit Cost" variant="brand" onclick={handlePOs}></lightning-button>
+                    </div>
+                </div>
+                <div class="slds-col slds-text-align_right">
+                </div>
+            </div>
+        </div>
+        <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+            <thead>
+                <tr class="slds-line-height_reset">
+                    <th class="slds-size_xx-small" scope="col">
+                        <lightning-input type="checkbox" variant="label-hidden" data-id="checkAll" onchange={handleSelectAll}></lightning-input>
+                    </th>
+                    <!-- <th class="slds-size_xx-small" scope="col">
+                        <div class="slds-truncate" title="Number">No</div>
+                    </th> -->
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="PO #">PO#</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="Description">Description</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="Project">Project</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="Vendor">Vendor</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="Cost Code">Cost Code</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="Status">Status</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="Total">Total</div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <template for:each={shownpoData} for:item="po" for:index="index">
+                    <tr key={po.id} class="slds-hint-parent">
+                        <td class="slds-size_xx-small">
+                            <lightning-input type="checkbox" variant="label-hidden" data-id={po.id}
+                                checked={po.isSelected} onchange={handleCheckboxChange}></lightning-input>
+                        </td>
+                        <!-- <td class="slds-size_xx-small">{po.rowNumber}</td> -->
+                        <td>
+                            <a href="javascript:void(0);" onclick={navigateToPO} data-id={po.id}>{po.name}</a>
+                        </td>
+                        <td class="truncateValue" style="max-width: 8rem;">{po.description}</td>
+                        <td>{po.projectName}</td>
+                        <td>{po.vendorName}</td>
+                        <td><p class="truncateValue" style="max-width: 8rem;">{po.costCodeDescription}</p></td>
+                        <td>
+                            <span class={po.statusClass}>{po.status}</span>
+                        </td>
+                        <td>
+                            <lightning-formatted-number value={po.total} format-style="currency"
+                                currency-code={orgCurrency} currency-display-as="code"></lightning-formatted-number>
+                        </td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+        <div class="paginationDiv slds-var-p-around_medium">
+            <div class="btnCover">
+                <div class="pagination-container">
+                    <button class="pagination-button" disabled={isFirstPage} onclick={handlePrevious}>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="52" width="52" viewBox="0 0 520 520"
+                            fill="#fff">
+                            <path
+                                d="M342 477 134 272c-6-6-6-16 0-22L342 45c6-6 16-6 22 0l22 22c6 6 6 16 0 22L221 250c-6 6-6 16 0 22l163 161c6 6 6 16 0 22l-22 22c-5 5-14 5-20 0z" />
+                        </svg>
+                        Back
+                    </button>
+
+                    <template for:each={pageNumbers} for:item="page">
+                        <template if:false={page.isEllipsis}>
+                            <button key={page.number} data-id={page.number} class={page.className}
+                                onclick={handlePageChange}>
+                                {page.number}
+                            </button>
+                        </template>
+                        <template if:true={page.isEllipsis}>
+                            <span key={page.number} class="pagination-ellipsis">...</span>
+                        </template>
+                    </template>
+
+                    <button class="pagination-button" disabled={isLastPage} onclick={handleNext}>
+                        Next
+                        <svg xmlns="http://www.w3.org/2000/svg" height="52" width="52" viewBox="0 0 520 520"
+                            fill="#fff">
+                            <path
+                                d="m179 44 207 205c6 6 6 16 0 22L179 476c-6 6-16 6-22 0l-22-22c-6-6-6-16 0-22l163-161c6-6 6-16 0-22L136 88c-6-6-6-16 0-22l22-22c6-5 15-5 21 0z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <template if:true={showPopUpModal}>
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-02" aria-modal="true"
+                aria-describedby="modal-content-id-2" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <!-- <lightning-button-icon style="border-radius: 5px; margin-top: 3px;" icon-name="utility:close" alternative-text="Close" title="Close" size="large" variant="bare-inverse"
+                            class="slds-modal__close" onclick={handleCloseModal}>
+                        </lightning-button-icon> -->
+                        <button class="slds-button slds-button_icon slds-modal__close custom-close-button" title="Close" onclick={handleCloseModal}>
+                            <lightning-icon icon-name="utility:close" alternative-text="close" size="small"
+                                class="custom-close-icon" ></lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-02" class="slds-modal__title slds-hyphenate">Update Purchase Order</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium scrollable-content" id="modal-content-id-2">
+                        <ul class="accordion">
+                            <template for:each={poList} for:item="poRec" for:index="index">
+                                <li key={poRec.id} data-selected={poRec.isOpen} class="accordion-item">
+                                    <div class="accordion-header">
+                                        <div class="checkbox-container">
+                                            <lightning-input type="checkbox" label="" name={poRec.id} checked={poRec.isSelected} onchange={handleSelectedPOs}></lightning-input>
+                                        </div>
+                                        <button class="accordion-toggle" data-category={poRec.id} data-index={index}
+                                            onclick={handleAccordionToggle}>
+                                            <div class="po-info">
+                                                <span class="po-name">{poRec.label}</span>
+                                                <span class="po-description truncateValue">
+                                                    <template if:true={poRec.description}> - {poRec.description}</template>
+                                                </span>
+                                            </div>
+                                            <lightning-icon icon-name={poRec.iconName} size="x-small" class="accordion-icon"></lightning-icon>
+                                        </button>
+                                    </div>
+                                    <div data-tablist={poRec.id} data-selected={poRec.isOpen} class="accordion-content">
+                                        <table class="popupTable">
+                                            <template if:true={poRec.poLines.length}>
+                                                <thead>
+                                                    <tr style="border: 1px solid #D8DDE6">
+                                                        <th style="max-width: 4rem !important; overflow: hidden; text-overflow: ellipsis;">
+                                                            <div class="slds-col slds-truncate">
+                                                                <p class="truncateValue">
+                                                                    PO Line Name
+                                                                </p>
+                                                            </div>
+                                                        </th>
+                                                        <th style="width: 30%; overflow: hidden; text-overflow: ellipsis;">
+                                                            <div class="slds-truncate">
+                                                                Pricebook
+                                                            </div>
+                                                        </th>
+                                                        <th style="width: 15%; overflow: hidden; text-overflow: ellipsis;">
+                                                            <div class="slds-truncate">
+                                                                Old Unit Cost
+                                                            </div>
+                                                        </th>
+                                                        <th style="width: 15%; overflow: hidden; text-overflow: ellipsis;">
+                                                            <div class="slds-truncate">
+                                                                New Unit Cost
+                                                            </div>
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <template for:each={poRec.poLines} for:item="pol" for:index="lineIndex">
+                                                        <tr key={pol.id} class={pol.rowClass}>
+                                                            <td style="max-width: 4rem !important;">
+                                                                <div class="slds-col slds-truncate">
+                                                                    <p class="truncateValue">
+                                                                        {pol.poItem}
+                                                                    </p>
+                                                                </div>
+                                                            </td>
+                                                            <td style="width: 30%; overflow: hidden; text-overflow: ellipsis;">
+                                                                <lightning-combobox name="pricebookSelect" value={pol.selectedPricebook} placeholder="Select Pricebook" 
+                                                                    variant="label-hidden" options={pol.options} data-index={lineIndex} data-po-index={index} onchange={handleChange}>
+                                                                </lightning-combobox>
+                                                            </td>
+                                                            <td style="width: 15%; overflow: hidden; text-overflow: ellipsis;">
+                                                                <lightning-formatted-number value={pol.oldUnitPrice}
+                                                                    format-style="currency" currency-code={orgCurrency}
+                                                                    currency-display-as="code"></lightning-formatted-number>
+                                                            </td>
+                                                            <td style="width: 15%; overflow: hidden; text-overflow: ellipsis;">
+                                                                <lightning-formatted-number value={pol.newUnitPrice}
+                                                                    format-style="currency" currency-code={orgCurrency}
+                                                                    currency-display-as="code"></lightning-formatted-number>
+                                                            </td>
+                                                        </tr>
+                                                    </template>
+                                                </tbody>
+                                            </template>
+                                            <template if:false={poRec.poLines.length}>
+                                                <tr>
+                                                    <td colspan="4" class="slds-text-align_center">
+                                                        No PO Lines Available
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </table>
+                                    </div>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="Cancel" onclick={handleCloseModal} class="slds-m-right_x-small">
+                        </lightning-button>
+                        <lightning-button label="Save" variant="brand" onclick={handleUpdatePOUnitCost}>
+                        </lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+    </div>
+</template>

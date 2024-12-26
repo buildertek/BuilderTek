@@ -1,0 +1,93 @@
+.header_css{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between; 
+    background: #F6F6F6;
+    padding: 1rem;
+    align-items: center;
+}
+
+.button_group button{
+    border: 0.5px solid #0176D3;
+    border-radius: 4px;
+    padding-bottom: 4px;
+}
+
+.button_group{
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+}
+
+.heading_bt{
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 16.41px;
+    text-align: center;
+}
+
+.td_div_class{
+    width: 10rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+thead{
+    background: #0678FF1A;
+    height: 4rem;
+    padding: 1rem;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 18px;
+    text-align: left;
+}
+
+td{
+    padding-bottom: 1rem;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 18px;
+    text-align: left;
+}
+
+.inside_dt_cls{
+    overflow: hidden;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+    height: 75vh;
+}
+
+.datatable_class{
+    padding: 1rem;
+}
+
+.popup-container {
+    position: relative;
+ }
+ 
+ .popup-container .popup {
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+ }
+ 
+ .backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+    background-color: #000000b0;
+ }
+
+ .popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10000;
+    animation: fadeIn 0.3s ease forwards;
+    width: 60rem;
+ }

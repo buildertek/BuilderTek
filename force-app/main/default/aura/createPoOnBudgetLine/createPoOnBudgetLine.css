@@ -1,0 +1,12 @@
+.THIS .mainBody{
+    margin: 1rem;
+}
+
+.THIS .flxBox{
+    display: flex;
+    margin: 1rem;
+}
+
+.THIS .flxBox div{
+    margin: 0 0.2em;
+}

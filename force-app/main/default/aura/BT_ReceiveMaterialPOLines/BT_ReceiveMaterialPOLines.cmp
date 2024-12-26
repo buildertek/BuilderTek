@@ -1,0 +1,433 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,lightning:isUrlAddressable,flexipage:availableForRecordHome,force:hasRecordId,lightning:isUrlAddressable,forceCommunity:availableForAllPageTypes,forceCommunity:layout" controller="ReceiveMaterialPOLinesController" access="global" >
+    <aura:attribute name="recordId" type="string" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="rfqRecordList" type="List" />
+    <aura:attribute name="listOfSelectedRFQIds" type="List" default="[]"/>
+    <aura:attribute name="mainObjectId" type="String" />
+    <aura:attribute name="onCancel" type="Object"/>
+    <lightning:workspaceAPI aura:id="workspace" />
+    <aura:attribute name="Spinner" type="Boolean" />
+    <aura:attribute name="showMessage" type="Boolean" default="false" />
+    <aura:attribute name="receivedQuantity" type="integer" />
+    <aura:attribute name="availableQuantity" type="integer" />
+     <aura:attribute name="paginationList" type="Object" />
+     <aura:attribute name="duppaginationList" type="Object" />
+    <aura:attribute name="startPage" type="Integer" />
+    <aura:attribute name="endPage" type="Integer" />
+    <aura:attribute name="totalRecords" type="Integer" />
+    <aura:attribute name="pageSize" type="Integer" default="7" />
+    <aura:attribute name="isCorrection" type="Boolean" default="false" />
+    <aura:attribute name="isVisible" type="Boolean" default="true" />
+    <aura:attribute name="option" type="List" />
+    
+    
+      <aura:handler name="change" value="{!v.value}" action="{!c.valueChangeValidation}"/>
+    
+    
+    <ltng:require styles="{!$Resource.MOdalPreviewWidth72}"/> 
+
+    <aura:attribute name="activeTab" type="String" default="tab1" />
+
+    <lightning:card>
+        <div class="header-container">
+            Manage Product
+        </div>
+
+        <aura:if isTrue="{!v.Spinner}">
+            <div aura:id="spinnerId" class="slds-spinner_container" style="position:fixed; ">
+                <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                    <span class="slds-assistive-text">Loading</span>
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                    <div class="custom-loading-text">
+                        <aura:if isTrue="{!v.showMessage}">
+                            <b>Processing, Please Wait</b>
+                            <!-- <b>Quantity Adding To Product </b>-->
+                        </aura:if>
+                    </div>
+                </div>
+            </div>
+        </aura:if>
+
+        <!-- Body: Tabs -->
+        <lightning:tabset selectedTabId="{!v.activeTab}" class="tab-container">
+            <lightning:tab label="Receive Product" id="tab1" onactive="{!c.handleTabChange}">
+                <table class="slds-table slds-table_bordered slds-table_cell-buffer" style="min-width: 100%;">
+                    <thead>
+                        <tr class="slds-text-heading--label">
+                            <th scope="col" class="slds-col slds-size_2-of-12">
+                                <div class="slds-truncate" title="PO Lines">
+                                    PO Item
+                                </div>
+                            </th>
+                            <th scope="col" class="slds-col slds-size_2-of-12">
+                                <div class="slds-truncate" title="Products">
+                                    Product
+                                </div>
+                            </th>
+                            <th scope="col" class="slds-col slds-size_1-of-12">
+                                <div class="slds-truncate" title="Ordered" style="text-align: center;">
+                                    Ordered
+                                </div>
+                            </th>
+                            <th scope="col" class="slds-col slds-size_1-of-12">
+                                <div class="slds-truncate" title="Received" style="text-align: center;">
+                                    Received
+                                </div>
+                            </th>
+                            <th scope="col" class="slds-col slds-size_1-of-12">
+                                <div class="slds-truncate" title="Remaining" style="text-align: center;">
+                                    Remaining
+                                </div>
+                            </th>
+                            <th scope="col" class="slds-col slds-size_1-of-12">
+                                <div class="slds-truncate" title="Ready to Ship" style="text-align: center;">
+                                    Ready to Ship
+                                </div>
+                            </th>
+                            <th scope="col" class="slds-col slds-size_1-of-12">
+                                <div class="slds-truncate" title="Delivered" style="text-align: center;">
+                                    Delivered
+                                </div>
+                            </th>
+                            <th scope="col" class="slds-col slds-size_2-of-12">
+                                <div class="slds-truncate" title="Location Received" style="text-align: center;">
+                                    Location Received
+                                </div>
+                            </th>
+                            <th scope="col" class="slds-col slds-size_3-of-12">
+                                <div class="slds-truncate" title="File Upload">
+                                    File Upload
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.paginationList}" var="item" indexVar="index">
+                            <tr>
+                                <td>
+                                    <div class="truncate-text" style="text-align: left;" title="{!item.Name}">
+                                        <a href="{!'/' + item.Id}">
+                                            {!item.Name}
+                                        </a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="truncate-text" style="text-align: left;" title="{!item.buildertek__Product__r.Name}">
+                                        <aura:if isTrue="{!item.buildertek__Product__r.Id}">
+                                            <a href="{!'/' + item.buildertek__Product__r.Id}">
+                                                {!item.buildertek__Product__r.Name}
+                                            </a>
+                                        </aura:if>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate" style="text-align: center;" title="{!item.buildertek__Quantity__c}">
+                                        {!item.buildertek__Quantity__c}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate" style="text-align: center;" title="{!item.buildertek__Quantity_Received__c}">
+                                        {!item.buildertek__Quantity_Received__c}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate" style="text-align: center;" title="{!item.buildertek__Quantity_Remaining__c}">
+                                        {!item.buildertek__Quantity_Remaining__c}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate" style="text-align: center;" title="{!item.buildertek__Ready_to_Ship__c}">
+                                        {!IF(item.buildertek__Ready_to_Ship__c != null, item.buildertek__Ready_to_Ship__c, 0)}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate" style="text-align: center;" title="{!item.buildertek__Quantity_Remaining__c}">
+                                        <lightning:input name="{!index}" type="number" value="{!item.quantity_recieved}" 
+                                            autocomplete="off" onkeyup="{!c.handleBlur}" 
+                                            messageWhenBadInput="You must enter a valid number" 
+                                            disabled="{!item.buildertek__Quantity_Remaining__c == 0}" />
+                                    </div>
+                                </td>
+                                <!-- <td>
+                                    <div class="slds-truncate" style="text-align: center;" title="Location Received">
+                                        <lightning:input type="text" name="{!index}" value="{!item.locationReceived}" maxlength="255" 
+                                            messageWhenBadInput="Location cannot exceed 255 characters" />
+                                    </div>
+                                </td> -->
+                                <td>
+                                    <div class="slds-truncate" style="text-align: center;" title="Location Received">
+                                        <lightning:select name="{!index}" 
+                                                          value="{!item.locationReceived}" 
+                                                          onchange="{!c.handleLocationChange}">
+                                            <!-- Default option -->
+                                            <option value="none" disabled="true" selected="true"> </option>
+                                            <!-- Iterating over the options -->
+                                            <aura:iteration items="{!v.option}" var="opt">
+                                                <option value="{!opt.value}">{!opt.label}</option>
+                                            </aura:iteration>
+                                        </lightning:select>
+                                    </div>
+                                </td>
+                                
+                                <td>
+                                    <lightning:fileUpload name="{!index}" multiple="true" accept=".pdf, .png, .jpg, .jpeg, .docx, .doc, .zip" 
+                                        onuploadfinished="{!c.handleUploadFinished}" 
+                                        disabled="{!item.buildertek__Quantity_Remaining__c == 0}" />
+                                    <aura:iteration items="{!item.filesNameList}" var="att">
+                                        <div class="slds-truncate" style="text-align: left;" title="{!att.documentName}">
+                                            <lightning:pill class="slds-m-around_xx-small slds-text-body_small slds-text-color_error" 
+                                                label="{!att.documentName}" name="{!att.documentId}" onremove="{! c.clear }">
+                                                <aura:set attribute="media">
+                                                    <lightning:icon iconName="standard:file" size="x-small" alternativeText="icon"/>
+                                                </aura:set>
+                                            </lightning:pill>
+                                        </div>
+                                    </aura:iteration>
+                                </td>
+                            </tr>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+                
+                                
+            </lightning:tab>
+            <lightning:tab label="Return Product" id="tab2" onactive="{!c.handleTabChange}">
+                <aura:if isTrue="{!v.isVisible}">
+                    <table class="slds-table slds-table_bordered slds-table_cell-buffer" style="min-width: 100%;">
+                        <thead>
+                            <tr class="slds-text-heading--label">
+                                <th scope="col" style="width: 20%;">
+                                    <div class="slds-truncate" title="PO Item">PO Item</div>
+                                </th>
+                                <th scope="col" style="width: 20%;">
+                                    <div class="slds-truncate" title="Product">Product</div>
+                                </th>
+                                <th scope="col" style="width: 10%; text-align: center;">
+                                    <div class="slds-truncate" title="Ordered">Ordered</div>
+                                </th>
+                                <th scope="col" style="width: 10%; text-align: center;">
+                                    <div class="slds-truncate" title="Received">Received</div>
+                                </th>
+                                <th scope="col" style="width: 10%; text-align: center;">
+                                    <div class="slds-truncate" title="Remaining">Remaining</div>
+                                </th>
+                                <th scope="col" style="width: 15%; text-align: center;">
+                                    <div class="slds-truncate" title="Returned">Returned</div>
+                                </th>
+                                <th scope="col" style="width: 25%;">
+                                    <div class="slds-truncate" title="Return Reason">Return Reason</div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration items="{!v.paginationList}" var="item" indexVar="index">
+                                <tr>
+                                    <td>
+                                        <div class="truncate-text" style="text-align: left;" title="{!item.Name}">
+                                            <a href="{!'/' + item.Id}">{!item.Name}</a>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="truncate-text" style="text-align: left;" title="{!item.buildertek__Product__r.Name}">
+                                            <aura:if isTrue="{!item.buildertek__Product__r.Id}">
+                                                <a href="{!'/' + item.buildertek__Product__r.Id}">
+                                                    {!item.buildertek__Product__r.Name}
+                                                </a>
+                                            </aura:if>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate" style="text-align: center;" title="{!item.buildertek__Quantity__c}">
+                                            {!item.buildertek__Quantity__c}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate" style="text-align: center;" title="{!item.buildertek__Quantity_Received__c}">
+                                            {!item.buildertek__Quantity_Received__c}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate" style="text-align: center;" title="{!item.buildertek__Quantity_Remaining__c}">
+                                            {!item.buildertek__Quantity_Remaining__c}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate" style="text-align: center;" title="{!item.buildertek__Quantity_Received__c}">
+                                            <aura:if isTrue="{!item.buildertek__Quantity__c > 0}">
+                                                <lightning:input 
+                                                    name="{!index}" 
+                                                    type="number" 
+                                                    value="{!item.quantity_return}" 
+                                                    autocomplete="off" 
+                                                    onkeyup="{!c.handleBlur2}" 
+                                                    messageWhenBadInput="You must enter a valid number" 
+                                                />
+                                                <aura:set attribute="else">
+                                                    <lightning:input 
+                                                        name="{!index}" 
+                                                        type="number" 
+                                                        value="{!item.quantity_return}" 
+                                                        autocomplete="off" 
+                                                        disabled="true" 
+                                                        messageWhenBadInput="You must say foo" 
+                                                    />
+                                                </aura:set>
+                                            </aura:if>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate" style="text-align: center;">
+                                            <aura:if isTrue="{!item.quantity_return > 0}">
+                                                <lightning:textarea 
+                                                    name="{!index}" 
+                                                    value="{!item.return_reason}" 
+                                                    placeholder="Enter return reason" 
+                                                    onchange="{!c.handleReasonChange}" 
+                                                    style="width: 90%;" 
+                                                    required="true"
+                                                />
+                                            </aura:if>
+                                            <aura:set attribute="else">
+                                                <lightning:textarea 
+                                                    name="{!index}" 
+                                                    value="{!item.return_reason}" 
+                                                    placeholder="Enter return reason" 
+                                                    disabled="true" 
+                                                    style="width: 90%;" 
+                                                />
+                                            </aura:set>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </aura:iteration>
+                        </tbody>
+                    </table>
+                    
+                    
+                    
+                    
+                    
+                    <aura:set attribute="else">
+                        <div class="slds-text-align_center">
+                            <p style="font-weight: bolder;">Contractor Invoice has been generated for this Purchase Order, products cannot be returned.</p>
+                        </div>
+                    </aura:set>
+                </aura:if>
+            </lightning:tab>
+            <lightning:tab label="Ready to Ship" id="tab3" onactive="{!c.handleTabChange}">
+                <table class="slds-table slds-table_bordered slds-table_cell-buffer" style="min-width: 100%;">
+                    <thead>
+                        <tr class="slds-text-heading--label">
+                            <th scope="col" style="width: 20%;">
+                                <div class="slds-truncate" title="PO Item">
+                                    PO Item
+                                </div>
+                            </th>
+                            <th scope="col" style="width: 25%;">
+                                <div class="slds-truncate" title="Product">
+                                    Product
+                                </div>
+                            </th>
+                            <th scope="col" style="width: 10%; text-align: center;">
+                                <div class="slds-truncate" title="Ordered">
+                                    Ordered
+                                </div>
+                            </th>
+                            <th scope="col" style="width: 10%; text-align: center;">
+                                <div class="slds-truncate" title="Received">
+                                    Received
+                                </div>
+                            </th>
+                            <th scope="col" style="width: 10%; text-align: center;">
+                                <div class="slds-truncate" title="Remaining">
+                                    Remaining
+                                </div>
+                            </th>
+                            <th scope="col" style="width: 25%; text-align: center;">
+                                <div class="slds-truncate" title="Ready to Ship">
+                                    Ready to Ship
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.paginationList}" var="item" indexVar="index">
+                            <tr>
+                                <td>
+                                    <div class="truncate-text" style="text-align: left;" title="{!item.Name}">
+                                        <a href="{!'/' + item.Id}">
+                                            {!item.Name}
+                                        </a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="truncate-text" style="text-align: left;" title="{!item.buildertek__Product__r.Name}">
+                                        <aura:if isTrue="{!item.buildertek__Product__r.Id}">
+                                            <a href="{!'/' + item.buildertek__Product__r.Id}">
+                                                {!item.buildertek__Product__r.Name}
+                                            </a>
+                                        </aura:if>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate" style="text-align: center;" title="{!item.buildertek__Quantity__c}">
+                                        {!item.buildertek__Quantity__c}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate" style="text-align: center;" title="{!item.buildertek__Quantity_Received__c}">
+                                        {!item.buildertek__Quantity_Received__c}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate" style="text-align: center;" title="{!item.buildertek__Quantity_Remaining__c}">
+                                        {!item.buildertek__Quantity_Remaining__c}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="slds-truncate" style="text-align: center;" title="Ready to Ship">
+                                        <lightning:input name="{!index}" 
+                                            type="number" 
+                                            value="{!item.buildertek__Ready_to_Ship__c}" 
+                                            min="0" 
+                                            max="{!item.buildertek__Quantity_Remaining__c}" 
+                                            onkeyup="{!c.handleReadyToShip}" 
+                                            messageWhenBadInput="Enter a valid number" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+            </lightning:tab>
+        </lightning:tabset>
+
+        <!-- Footer -->
+        <div class="footer-container">
+            <div class="footer-left">
+                <lightning:button label="Previous" disabled="{!v.startPage == 0}" 
+                                  onclick="{!c.previous}" variant="brand" class="slds-float_left"
+                                  iconName='utility:back'/>
+                &nbsp; &nbsp;
+                <lightning:button label="Next" disabled="{!v.endPage >= v.totalRecords}"
+                                  onclick="{!c.next}" variant="brand" class="slds-float_left"
+                                  iconName='utility:forward'/>
+            </div>
+            <div class="footer-right">
+                <aura:if isTrue="{!v.activeTab == 'tab1'}">
+                    <lightning:button variant="neutral" label="Cancel" onclick="{!c.closeModal}" />
+                    <lightning:button aura:id="submit" variant="brand" label="Receive Product" onclick="{!c.addToPOLinesForAddition}" />
+                </aura:if>
+                <aura:if isTrue="{!v.activeTab == 'tab2'}">
+                    <lightning:button variant="neutral" label="Cancel" onclick="{!c.closeModal}" />
+                    <lightning:button aura:id="submit" variant="brand" label="Return Product" onclick="{!c.addToPOLinesForCorrection}" />
+                </aura:if>
+                <aura:if isTrue="{!v.activeTab == 'tab3'}">
+                    <lightning:button variant="neutral" label="Cancel" onclick="{!c.closeModal}" />
+                    <lightning:button aura:id="submit" variant="brand" label="Add Shipping" onclick="{!c.addshipping}" />
+                </aura:if>
+            </div>
+        </div>
+    </lightning:card>
+</aura:component>

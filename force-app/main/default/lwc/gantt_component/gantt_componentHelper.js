@@ -1,0 +1,721 @@
+function formatApexDatatoJSData(scheduleData, scheduleItemsData, scheduleItemsDataList) {
+    var taskDependencyData = [];
+    var resourceRowData = [];
+    let assignmentRowData = [];
+
+    var rows = [];
+    var formattedData = {};
+    var firstRowDup = {};
+
+    var taskListForPhase = scheduleItemsDataList;
+
+    firstRowDup["id"] = scheduleData.Id;
+    firstRowDup["name"] = scheduleData.buildertek__Description__c;
+    firstRowDup["startDate"] = scheduleData.buildertek__Initial_Start_Date__c;
+    firstRowDup["expanded"] = true
+    firstRowDup["type"] = 'Project'
+    firstRowDup['customtype'] = 'Project'
+    firstRowDup["endDate"] = scheduleData.buildertek__End_date__c || scheduleData.buildertek__Initial_Start_Date__c;
+    firstRowDup["children"] = []
+
+    //*BUIL-3699 new logic start
+
+    firstRowDup['children'] = grpTaskOnPhase(taskListForPhase).children;
+
+    for (var i = 0; i < taskListForPhase.length; i++) {
+        var dependencyRow = {};
+        if (taskListForPhase[i].buildertek__Dependency__c) {
+            dependencyRow["id"] = taskListForPhase[i].Id + '_' + taskListForPhase[i].buildertek__Dependency__c
+            dependencyRow["fromTask"] = taskListForPhase[i].buildertek__Dependency__c
+            dependencyRow["toTask"] = taskListForPhase[i].Id
+            dependencyRow["lag"] = taskListForPhase[i].buildertek__Lag__c
+            taskDependencyData.push(dependencyRow)
+        }
+
+        assignmentRowData.push.apply(assignmentRowData, createAssignmentData(taskListForPhase[i], i)); //adds all the assignment data to the main list.
+    }
+
+    //* BUIL-3699 new logic end
+
+    rows.push(firstRowDup);
+    formattedData['rows'] = rows;
+    formattedData['resourceRowData'] = resourceRowData;
+    formattedData['assignmentRowData'] = assignmentRowData;
+    formattedData['taskDependencyData'] = taskDependencyData;
+
+    return formattedData;
+}
+
+function convertJSONtoApexData(data, taskData, dependenciesData, resourceData) {
+    console.log('Data-->', data)
+    console.log('taskData-->', taskData)
+    console.log('dependenciesData-->', dependenciesData)
+    console.log('resourceData-->', resourceData)
+    let dataToPassIntoApex = {};
+    let scheduleObj = {};
+    var rowData = [];
+    const phasedatamap = new Map();
+    const contractordatamap = new Map();
+    const markAsDonemap = new Map();
+    let lagDataMap = dependencyLagData(dependenciesData);
+    console.log('lagDataMap:- ', lagDataMap);
+    if (data && data.length > 0) {
+        data.forEach(element => {
+            if (element._data.hasOwnProperty('NewPhase')) {
+                phasedatamap.set(element.id, element._data.NewPhase);
+            }
+            if (element._data.hasOwnProperty('contractorId')) {
+                contractordatamap.set(element.id, element._data.contractorId);
+            }
+            if (element._data.hasOwnProperty('markAsDone')) {
+                markAsDonemap.set(element.id, element._data.markAsDone);
+            }
+        });
+        if (data.length > 0) {
+            function getChildren(data) {
+                if (data.children) {
+                    for (var i = 0; i < data.children.length; i++) {
+                        getChildren(data.children[i])
+                    }
+                } else {
+                    rowData.push(data)
+                }
+            }
+            for (let j = 0; j < taskData.length; j++) {
+                getChildren(taskData[j])
+            }
+            var updateDataList = [];
+            var updateDataCloneList = [];
+            for (var i = 0; i < rowData.length; i++) {
+                var updateData = {}
+                var updateDataClone = {}
+                var endDate
+                if (rowData[i]['name'] != 'Milestone Complete') {
+                    endDate = new Date(rowData[i].endDate);
+                    endDate.setDate(endDate.getDate())
+                } else {
+                    endDate = new Date(rowData[i].endDate);
+                }
+
+                rowData[i].endDate = endDate;
+                // if (rowData[i]['id'].indexOf('_generate') == -1)
+                updateData['Id'] = rowData[i]['id']
+                // }
+                updateData['buildertek__Schedule__c'] = taskData[0].id;
+                updateData['Name'] = rowData[i]['name'];
+
+                updateData['buildertek__Order__c'] = i + 1;
+                var enddate = new Date(rowData[i]['endDate']).toLocaleDateString().split('/')
+                var enddate = new Date(rowData[i]['endDate'])
+                updateData['buildertek__Start__c'] = rowData[i]['startDate'].split('T')[0]
+                updateData['buildertek__Finish__c'] = enddate.getFullYear() + '-' + Number(enddate.getMonth() + 1) + '-' + enddate.getDate();
+                updateData['buildertek__Duration__c'] = rowData[i]['duration']
+                updateData['buildertek__Completion__c'] = rowData[i]['percentDone']
+                updateData['buildertek__Notes__c'] = rowData[i]['note']
+                updateData['buildertek__task_color__c'] = rowData[i]['eventColor']
+                if(rowData[i].hasOwnProperty('constraintDate')){
+                    updateData['buildertek__ConstraintDate__c'] = rowData[i]['constraintDate'] ? covertIntoDate(rowData[i]['constraintDate']) : null
+                    updateData['buildertek__Constraint_Type__c'] = rowData[i]['constraintType'] 
+                } else{
+                    updateData['buildertek__ConstraintDate__c'] = null
+                    updateData['buildertek__Constraint_Type__c'] = null
+                }
+                updateData['buildertek__Lag__c'] = lagDataMap.get(rowData[i]['id']) || 0
+
+                if (rowData[i]['customtype']) {
+                    updateData['buildertek__Type__c'] = rowData[i]['customtype']
+                } else {
+                    if (rowData[i]['duration'] == 0) {
+                        updateData['buildertek__Type__c'] = 'Milestone'
+                        rowData[i]['eventColor'] = ''
+                    } else {
+                        updateData['buildertek__Type__c'] = 'Task'
+                    }
+                }
+
+                if (rowData[i]['cls']) {
+                    var check = rowData[i]['cls']
+                    if (check.includes('milestoneCompleteColor')) {
+                        updateData['buildertek__Milestone__c'] = true;
+                    }
+                }
+                if (rowData[i]['iconCls'] == 'b-fa b-fa-arrow-left indentTrue') {
+                    updateData['buildertek__Indent_Task__c'] = true
+                } else {
+                    updateData['buildertek__Indent_Task__c'] = false;
+                }
+                //updateData['buildertek__Indent_Task__c'] = rowData[i]['iconCls'].includes('indentTrue')
+                if (rowData[i]['parentId']) {
+                    if (rowData[i]['parentId'].split('_')[1]) {
+                        updateData['buildertek__Phase__c'] = rowData[i]['parentId'].split('_')[1]
+                    }
+                }
+
+
+                var filledDependency = false
+                for (var j = 0; j < dependenciesData.length; j++) {
+                    if (dependenciesData[j]['to'] == rowData[i]['id']) {
+                        if (dependenciesData[j]['id'].indexOf('_generated') >= 0) {
+                            updateData['buildertek__Dependency__c'] = dependenciesData[j]['from']
+                        } else {
+                            updateData['buildertek__Dependency__c'] = dependenciesData[j]['from']
+                        }
+                        filledDependency = true;
+                    }
+                    if (!filledDependency) {
+                        updateData['buildertek__Dependency__c'] = null;
+                    }
+                }
+
+                if (phasedatamap.has(updateData.Id)) {
+                    updateData['buildertek__Phase__c'] = phasedatamap.get(updateData.Id);
+                }
+
+                if (contractordatamap.has(updateData.Id)) {
+                    updateData['buildertek__Contractor__c'] = contractordatamap.get(updateData.Id);
+                }
+
+                if (markAsDonemap.has(updateData.Id)) {
+                    updateData['buildertek__Completed__c'] = markAsDonemap.get(updateData.Id);
+                }
+
+                updateDataClone = Object.assign({}, updateData);
+
+                if (rowData[i]['id'].indexOf('_generate') == -1) {
+                    updateDataCloneList.push(updateDataClone)
+                }
+                updateDataList.push(updateData)
+            }
+
+            if (data[0]._data['type'] === "Project") {
+                scheduleObj['id'] = data[0]._data.id;
+                scheduleObj['buildertek__End_date__c'] = covertIntoDate(data[0]._data.endDate);
+            }
+
+            dataToPassIntoApex['scheduleData'] = scheduleObj;
+            dataToPassIntoApex['taskData'] = updateDataList;
+
+            return dataToPassIntoApex;
+        }
+    }
+}
+
+function dependencyLagData(dependenciesData) {
+    const lagdatamap = new Map();
+    if(dependenciesData && dependenciesData.length > 0){
+        dependenciesData.forEach(({ to, lag }) => {
+            lagdatamap.set(to, lag);
+        });
+    }
+    return lagdatamap;
+}
+
+function recordsTobeDeleted(oldListOfTaskRecords, newListOfTaskRecords) {
+    const setOfNewRecordId = new Set();
+    const listOfRecordIdToBeDeleted = [];
+    newListOfTaskRecords.forEach(newTaskRecord => {
+        var taskId = newTaskRecord.Id
+        if (!(taskId.includes('_generatedt_'))) {
+            setOfNewRecordId.add(newTaskRecord.Id);
+        }
+    });
+
+    oldListOfTaskRecords.forEach(oldTaskRecord => {
+        if (!setOfNewRecordId.has(oldTaskRecord.Id)) {
+            listOfRecordIdToBeDeleted.push(oldTaskRecord.Id);
+        }
+    });
+    console.log('listOfRecordIdToBeDeleted:- ', listOfRecordIdToBeDeleted);
+    return listOfRecordIdToBeDeleted;
+}
+
+function covertIntoDate(date) {
+    var d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
+
+    if (month.length < 2)
+        month = '0' + month;
+    if (day.length < 2)
+        day = '0' + day;
+
+    return [year, month, day].join('-');
+}
+
+function makeComboBoxDataForContractor(listOfContractors) {
+    let listOfContractorToReturn = [];
+    listOfContractorToReturn.push({ value: '', text: 'None' });
+    listOfContractors.forEach(ctrObj => {
+        let contractorObj = {};
+        if (ctrObj.Id) {
+            contractorObj['value'] = ctrObj.Id;
+        }
+        if (ctrObj.Name) {
+            contractorObj['text'] = ctrObj.Name;
+        }
+        listOfContractorToReturn.push(contractorObj);
+    });
+    return listOfContractorToReturn;
+}
+
+//* auther : Nishit Suthar
+//* Date : 8th Sep 2023
+//* this method is use for creating data for resources to store in backend
+function setResourceDataForApexData(assignmentsData) {
+    if (assignmentsData.length > 0) {
+        const resourceMap = {};
+        assignmentsData.forEach(assignmentObj => {
+            let recordId = assignmentObj.eventId;
+            let resourcePrefixToIdentify = assignmentObj.resourceId ? assignmentObj.resourceId.slice(0, 3) : undefined;
+
+            if (resourceMap[recordId]) {
+                if (resourcePrefixToIdentify == '003') {
+                    resourceMap[recordId].conList.push(assignmentObj.resourceId);
+                } else if (resourcePrefixToIdentify == '005') {
+                    resourceMap[recordId].usrList.push(assignmentObj.resourceId);
+                }
+            } else {
+                if (resourcePrefixToIdentify == '003') {
+                    resourceMap[recordId] = { conList: [assignmentObj.resourceId], usrList: [] };
+                } else if (resourcePrefixToIdentify == '005') {
+                    resourceMap[recordId] = { conList: [], usrList: [assignmentObj.resourceId] };
+                }
+            }
+        });
+
+        let listOfResourceToReturn = createResourceDataForApex(resourceMap);
+        console.log('listOfResourceToReturn :- ', listOfResourceToReturn);
+        return listOfResourceToReturn;
+    }
+}
+
+//* auther : Nishit Suthar
+//* Date : 11th Sep 2023
+//* this method is use for creating data for resources to store in backend
+function createResourceDataForApex(resourceObjectWithList) {
+
+    let data = resourceObjectWithList;
+    let listOfapexDataToReturn = [];
+
+    for (const id in data) {
+        if (data[id].conList.length > 3 || data[id].usrList.length > 3) {
+            return 'error'
+        }
+        let apexDataObject = {};
+        apexDataObject['Id'] = id;
+        const [a = null, b = null, c = null] = data[id].conList;
+        apexDataObject['buildertek__Contractor_Resource_1__c'] = a;
+        apexDataObject['buildertek__Contractor_Resource_2__c'] = b;
+        apexDataObject['buildertek__Contractor_Resource_3__c'] = c;
+        const [e = null, f = null, g = null] = data[id].usrList;
+        apexDataObject['buildertek__Internal_Resource_1__c'] = e;
+        apexDataObject['buildertek__Internal_Resource_4__c'] = f;
+        apexDataObject['buildertek__Internal_Resource_3__c'] = g;
+        listOfapexDataToReturn.push(apexDataObject);
+    }
+
+    return listOfapexDataToReturn;
+}
+//* auther : Nishit Suthar/krunal Lungaria
+//* Date : 29th Aug 2023
+//* this method is used to create data for resource combobox
+function makeComboBoxDataForResourceData(listOfContractors, listOfUsers) {
+    let listOfResourceToReturn = [];
+
+    listOfContractors.forEach(ctrObj => {
+        if (ctrObj.Contacts) {
+            ctrObj.Contacts.forEach(resObj => {
+                let resourceObj = {};
+                resourceObj['id'] = resObj.Id;
+                resourceObj['name'] = resObj.Name;
+                resourceObj['contractorId'] = resObj.AccountId;
+                resourceObj['type'] = 'External Resources';
+                listOfResourceToReturn.push(resourceObj);
+            });
+        }
+    });
+
+    listOfUsers.forEach(usrObj => {
+        let resourceObj = {};
+        resourceObj['id'] = usrObj.Id;
+        resourceObj['name'] = usrObj.Name;
+        resourceObj['type'] = 'Internal Resources';
+        listOfResourceToReturn.push(resourceObj);
+    });
+
+
+    return listOfResourceToReturn;
+}
+
+//* auther : Nishit Suthar
+//* Date : 24th Aug 2023
+//* this method is used to calculate business days between two dates for project schedule
+function calcBusinessDays(dDate1, dDate2, checkIsweekendIncluded) { // input given as Date objects
+    if (!checkIsweekendIncluded) {
+        var iWeeks, iDateDiff, iAdjust = 0;
+        if (dDate2 < dDate1) return -1; // error code if dates transposed
+        var iWeekday1 = dDate1.getDay(); // day of week
+        var iWeekday2 = dDate2.getDay();
+        iWeekday1 = (iWeekday1 == 0) ? 7 : iWeekday1; // change Sunday from 0 to 7
+        iWeekday2 = (iWeekday2 == 0) ? 7 : iWeekday2;
+        if ((iWeekday1 > 5) && (iWeekday2 > 5)) iAdjust = 1; // adjustment if both days on weekend
+        iWeekday1 = (iWeekday1 > 5) ? 5 : iWeekday1; // only count weekdays
+        iWeekday2 = (iWeekday2 > 5) ? 5 : iWeekday2;
+
+        // calculate differnece in weeks (1000mS * 60sec * 60min * 24hrs * 7 days = 604800000)
+        iWeeks = Math.floor((dDate2.getTime() - dDate1.getTime()) / 604800000)
+
+        if (iWeekday1 <= iWeekday2) { //Change '<' to '<=' to include the same date
+            iDateDiff = (iWeeks * 5) + (iWeekday2 - iWeekday1)
+        } else {
+            iDateDiff = ((iWeeks + 1) * 5) - (iWeekday1 - iWeekday2)
+        }
+
+        iDateDiff -= iAdjust // take into account both days on weekend
+
+        return (iDateDiff + 1); // add 1 because dates are inclusive
+    } else {
+        var startDate = new Date(dDate1);
+        var endDate = new Date(dDate2);
+        var count = 0;
+        while (startDate <= endDate) {
+            count++;
+            startDate.setDate(startDate.getDate() + 1);
+        }
+        return count;
+    }
+}
+
+//* auther : Nishit Suthar
+//* Date : 11th Sep 2023
+//* this method is used to merge 2 arrays of object
+function mergeArrays(taskData, assignedResources) {
+    const mergedList = [];
+
+    for (const item1 of taskData) {
+        let matchingItem;
+        if (assignedResources) {
+            for (const element of assignedResources) {
+                if (element.Id === item1.Id) {
+                    matchingItem = element;
+                    break;
+                }
+            }
+        }
+
+        if (matchingItem) {
+            const mergedObject = Object.assign({}, item1, matchingItem);
+            mergedList.push(mergedObject);
+        } else {
+            item1['buildertek__Contractor_Resource_1__c'] = null;
+            item1['buildertek__Contractor_Resource_2__c'] = null;
+            item1['buildertek__Contractor_Resource_3__c'] = null;
+            item1['buildertek__Internal_Resource_1__c'] = null;
+            item1['buildertek__Internal_Resource_3__c'] = null;
+            item1['buildertek__Internal_Resource_4__c'] = null;
+            mergedList.push(item1);
+        }
+    }
+
+    return mergedList;
+}
+
+//* ayther : Mitrajsinh Gohil
+//* Date : 8th Dec 2023
+//* This method is used to create task Assignment Data for each task
+
+function createAssignmentData(taskListForPhase, i) {
+    let temp = taskListForPhase;
+    console.log('taskListForPhase ',JSON.parse(JSON.stringify(temp)));
+    // debugger
+    let assignmentRowCon1 = {}
+    let assignmentRowCon2 = {}
+    let assignmentRowCon3 = {}
+    let assignmentRowIn1 = {}
+    let assignmentRowIn2 = {}
+    let assignmentRowIn3 = {}
+    var assignmentRowDataChild = [];
+    if (!taskListForPhase.buildertek__Milestone__c && taskListForPhase.buildertek__Contractor_Resource_1__c) {
+        assignmentRowCon1['id'] = taskListForPhase.Id + '_' + taskListForPhase.buildertek__Contractor_Resource_1__c + '__index' + i + 'ContractorResource_Name' + taskListForPhase.buildertek__Contractor_Resource_1__r.Name;
+        assignmentRowCon1['event'] = taskListForPhase.Id
+        assignmentRowCon1['resource'] = taskListForPhase.buildertek__Contractor_Resource_1__c;
+        assignmentRowDataChild.push(assignmentRowCon1)
+    }
+    if (!taskListForPhase.buildertek__Milestone__c && taskListForPhase.buildertek__Contractor_Resource_2__c) {
+        assignmentRowCon2['id'] = taskListForPhase.Id + '_' + taskListForPhase.buildertek__Contractor_Resource_2__c + '__index' + i + 'ContractorResource_Name' + taskListForPhase.buildertek__Contractor_Resource_2__r.Name;
+        assignmentRowCon2['event'] = taskListForPhase.Id
+        assignmentRowCon2['resource'] = taskListForPhase.buildertek__Contractor_Resource_2__c;
+        assignmentRowDataChild.push(assignmentRowCon2)
+    }
+
+    if (!taskListForPhase.buildertek__Milestone__c && taskListForPhase.buildertek__Contractor_Resource_3__c) {
+        assignmentRowCon3['id'] = taskListForPhase.Id + '_' + taskListForPhase.buildertek__Contractor_Resource_3__c + '__index' + i + 'ContractorResource_Name' + taskListForPhase.buildertek__Contractor_Resource_3__r.Name;
+        assignmentRowCon3['event'] = taskListForPhase.Id
+        assignmentRowCon3['resource'] = taskListForPhase.buildertek__Contractor_Resource_3__c;
+        assignmentRowDataChild.push(assignmentRowCon3)
+    }
+
+    if (!taskListForPhase.buildertek__Milestone__c && taskListForPhase.buildertek__Internal_Resource_1__c) {
+        assignmentRowIn1['id'] = taskListForPhase.Id + '_' + taskListForPhase.buildertek__Internal_Resource_1__c + '__index' + i + 'ContractorResource_Name' + taskListForPhase.buildertek__Internal_Resource_1__r.Name;
+        assignmentRowIn1['event'] = taskListForPhase.Id
+        assignmentRowIn1['resource'] = taskListForPhase.buildertek__Internal_Resource_1__c;
+        console.log('assignmentRow cont 1 ', JSON.parse(JSON.stringify(assignmentRowIn1)));
+        assignmentRowDataChild.push(assignmentRowIn1)
+    }
+
+    if (!taskListForPhase.buildertek__Milestone__c && taskListForPhase.buildertek__Internal_Resource_3__c) {
+        assignmentRowIn2['id'] = taskListForPhase.Id + '_' + taskListForPhase.buildertek__Internal_Resource_3__c + '__index' + i + 'ContractorResource_Name' + taskListForPhase.buildertek__Internal_Resource_3__r.Name;
+        assignmentRowIn2['event'] = taskListForPhase.Id
+        assignmentRowIn2['resource'] = taskListForPhase.buildertek__Internal_Resource_3__c;
+        console.log('assignmentRow cont 2 ', JSON.parse(JSON.stringify(assignmentRowIn2)));
+        assignmentRowDataChild.push(assignmentRowIn2)
+    }
+
+    if (!taskListForPhase.buildertek__Milestone__c && taskListForPhase.buildertek__Internal_Resource_4__c) {
+        assignmentRowIn3['id'] = taskListForPhase.Id + '_' + taskListForPhase.buildertek__Internal_Resource_4__c + '__index' + i + 'ContractorResource_Name' + taskListForPhase.buildertek__Internal_Resource_4__r.Name;
+        assignmentRowIn3['event'] = taskListForPhase.Id
+        assignmentRowIn3['resource'] = taskListForPhase.buildertek__Internal_Resource_4__c;
+        console.log('assignmentRow cont 3 ', JSON.parse(JSON.stringify(assignmentRowIn3)));
+        assignmentRowDataChild.push(assignmentRowIn3)
+    }
+
+    console.log('assignmentRowDataChild ', assignmentRowDataChild);
+    return assignmentRowDataChild;
+}
+
+//* ayther : Mitrajsinh Gohil
+//* Date : 8th Dec 2023
+//* This method is used to create task row data based on the conditions
+function grpTaskOnPhase(records) {
+    const hierarchy = { children: [] };
+    // const taskMap = new Map(records.map(record => [record.Id, record]));
+
+    records.forEach(record => {
+        const phase1 = record.buildertek__Phase__c || 'UnknownPhase1';
+        const phase2 = record.buildertek__BT_Grouping__c || 'UnknownPhase2';
+        const phase3 = record.buildertek__BT_Phase3__c || 'UnknownPhase3';
+
+        if (!hierarchy.children.find(child => child.id == phase1) && phase1 !== 'UnknownPhase1') {
+            hierarchy.children.push({ id: phase1, name: phase1, expanded: true, type: "Phase", children: [] });
+        }
+
+        let targetNode;
+
+        if (phase2 !== 'UnknownPhase2' && phase3 !== 'UnknownPhase3' && phase1 !== 'UnknownPhase1') {
+            let phase2Node1 = hierarchy.children.find(child => child.id === phase1)
+            let phase2Node = phase2Node1.children.find(child => child.id === phase1 + phase2);
+
+            if (!phase2Node) {
+                phase2Node = { id: phase1 + phase2, name: record.buildertek__BT_Grouping__r.Name, expanded: true, type: "Phase", children: [] };
+                hierarchy.children.find(child => child.id === phase1).children.push(phase2Node);
+            }
+
+            let phase3Node = phase2Node.children.find(child => child.id === phase1 + phase2 + phase3);
+
+            if (!phase3Node) {
+                phase3Node = { id: phase1 + phase2 + phase3, name: record.buildertek__BT_Phase3__r.Name, expanded: true, type: "Phase", children: [] };
+                phase2Node.children.push(phase3Node);
+            }
+
+            targetNode = phase3Node;
+        } else if (phase2 !== 'UnknownPhase2' && phase1 !== 'UnknownPhase1') {
+            let phase2Node = hierarchy.children.find(child => child.id === phase1).children.find(child => child.id === phase1 + phase2);
+
+            if (!phase2Node) {
+                phase2Node = { id: phase1 + phase2, name: record.buildertek__BT_Grouping__r.Name, expanded: true, type: "Phase", children: [] };
+                hierarchy.children.find(child => child.id === phase1).children.push(phase2Node);
+            }
+
+            targetNode = phase2Node;
+        }
+        else if (phase1 !== 'UnknownPhase1') {
+            targetNode = hierarchy.children.find(child => child.id === phase1);
+        } else {
+            targetNode = hierarchy;
+        }
+
+        let customtype;
+        let duration;
+        let classtype;
+
+        let constraintType = "";
+        let constraintDate = "";
+        
+        if (!record.buildertek__Dependency__c || record.buildertek__ConstraintDate__c != null) {
+            constraintDate = record.buildertek__ConstraintDate__c != null ? record.buildertek__ConstraintDate__c : record.buildertek__Start__c;
+            constraintType = record.buildertek__Constraint_Type__c != null ? record.buildertek__Constraint_Type__c : "startnoearlierthan";
+        }
+
+        let duprecordobj = {
+            id: record.Id,
+            name: record.Name,
+            Phase: record.buildertek__Phase__c,
+            NewPhase: record.buildertek__Phase__c,
+            percentDone: record.buildertek__Completion__c || 0,
+            startDate: record.buildertek__Start__c,
+            constraintType: constraintType,
+            constriantDate: constraintDate,
+            // constraintType: (record.buildertek__Dependency__c && record.buildertek__Lag__c) ? "" : "startnoearlierthan",
+            // constriantDate: (record.buildertek__Dependency__c && record.buildertek__Lag__c) ? "" : record.buildertek__Start__c,
+            note: record.buildertek__Notes__c,
+            expanded: true,
+            type: "Task",
+            iconCls: "b-fa b-fa-arrow-right",
+            contractorId: record.buildertek__Contractor__c || "",
+            // Add other fields as needed
+        }
+        if (record.Name == "Milestone Complete") {
+            duprecordobj['customtype'] = 'Milestone';
+            duprecordobj['duration'] = 0;
+            duprecordobj['cls'] = "milestoneTypeColor pavel";
+        } else {
+            duprecordobj['customtype'] = 'Task';
+            duprecordobj['duration'] = record.buildertek__Duration__c || 1;
+            duprecordobj['cls'] = "task";
+            if (record.buildertek__Dependency__r) {
+                duprecordobj['predecessorName'] = record.buildertek__Dependency__r.Name
+            }
+            duprecordobj['eventColor'] = checkPastDueForTask(record);
+        }
+        targetNode.children.push(duprecordobj);
+    });
+
+    return hierarchy;
+}
+
+function checkPastDueForTask(task) {
+    if (task.buildertek__Finish__c != null && task.buildertek__Finish__c != undefined) {
+        var today = new Date();
+        var finishDate = new Date(task.buildertek__Finish__c);
+        today.setHours(0, 0, 0, 0);
+        finishDate.setHours(0, 0, 0, 0);
+        if (finishDate < today && task.buildertek__Completion__c < 100 && task.buildertek__Milestone__c == false && task.buildertek__Type__c != 'Milestone' && task.buildertek__Completed__c == false) {
+            return 'red';
+        } else {
+            return task.buildertek__task_color__c || "";
+        }
+
+    }
+}
+
+function checkPastDueForTaskInFront(record) {
+    console.log('it is working fine');
+    if (record.type == "Task") {
+        if (record.percentDone == 100) {
+            record.set("percentDone", 0);
+            if (record.endDate < new Date()) {
+                record.set("eventColor", 'red');
+            } else {
+                record.set("eventColor", 'green');
+            }
+        } else {
+            record.set("percentDone", 100);
+            record.set("eventColor", 'green');
+        }
+    }
+}
+
+//* ayther : Nishit Suthar
+//* Date : 3rd May 2024
+//* This method is creating a custom calendardata to include weekends in working hours
+function encludeWeekendWorkingHours() {
+    return [
+        {
+            "id": "general",
+            "name": "General",
+            "intervals": [
+                {
+                    "recurrentStartDate": "every weekday at 12:00",
+                    "recurrentEndDate": "every weekday at 13:00",
+                    "isWorking": false
+                },
+                {
+                    "recurrentStartDate": "every weekday at 17:00",
+                    "recurrentEndDate": "every weekday at 08:00",
+                    "isWorking": false
+                }
+            ],
+            "expanded": true,
+            "children": [
+                {
+                    "id": "business",
+                    "name": "Business",
+                    "hoursPerDay": 8,
+                    "daysPerWeek": 7,
+                    "daysPerMonth": 30,
+                    "unspecifiedTimeIsWorking": false,
+                    "intervals": [
+                        {
+                            "recurrentStartDate": "on monday at 8:00",
+                            "recurrentEndDate": "on monday at 16:00",
+                            "isWorking": true
+                        },
+                        {
+                            "recurrentStartDate": "on tuesday at 8:00",
+                            "recurrentEndDate": "on tuesday at 16:00",
+                            "isWorking": true
+                        },
+                        {
+                            "recurrentStartDate": "on wednesday at 8:00",
+                            "recurrentEndDate": "on wednesday at 16:00",
+                            "isWorking": true
+                        },
+                        {
+                            "recurrentStartDate": "on thursday at 8:00",
+                            "recurrentEndDate": "on thursday at 16:00",
+                            "isWorking": true
+                        },
+                        {
+                            "recurrentStartDate": "on friday at 8:00",
+                            "recurrentEndDate": "on friday at 16:00",
+                            "isWorking": true
+                        },
+                        {
+                            "recurrentStartDate": "on saturday at 8:00",
+                            "recurrentEndDate": "on saturday at 16:00",
+                            "isWorking": true
+                        },
+                        {
+                            "recurrentStartDate": "on sunday at 8:00",
+                            "recurrentEndDate": "on sunday at 16:00",
+                            "isWorking": true
+                        }
+                    ]
+                },
+                {
+                    "id": "night",
+                    "name": "Night shift",
+                    "hoursPerDay": 8,
+                    "daysPerWeek": 5,
+                    "daysPerMonth": 20,
+                    "intervals": [
+                        {
+                            "recurrentStartDate": "every weekday at 6:00",
+                            "recurrentEndDate": "every weekday at 22:00",
+                            "isWorking": false
+                        }
+                    ]
+                }
+            ]
+        }
+    ];
+}
+
+function checkForWeekend(sDate) {
+    let selectedProjectStartDate = new Date(sDate);
+    let day = selectedProjectStartDate.getDay();
+    if (day == 0) {
+        return new Date(selectedProjectStartDate.setDate(selectedProjectStartDate.getDate() + 1));
+    } else if(day == 6) {
+        return new Date(selectedProjectStartDate.setDate(selectedProjectStartDate.getDate() + 2));
+    }
+    return selectedProjectStartDate;
+}
+
+function calculateDifferenceBetweenDates(date1, date2) {
+    const diffTime = Math.abs(date2 - date1);
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
+    return diffDays;
+}
+export { formatApexDatatoJSData, checkPastDueForTaskInFront, convertJSONtoApexData, recordsTobeDeleted, makeComboBoxDataForContractor, calcBusinessDays, makeComboBoxDataForResourceData, setResourceDataForApexData, mergeArrays, createAssignmentData, encludeWeekendWorkingHours, checkForWeekend, calculateDifferenceBetweenDates };

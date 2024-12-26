@@ -1,0 +1,55 @@
+<apex:page controller="BT_RFQConfiguration" sidebar="false" lightningStylesheets="true">
+    <apex:slds />
+    <apex:form id="frmConfigure" > 
+        <apex:pageBlock id="thepageblock">
+            <apex:outputText escape="false" value="{!settingDescription}">
+            </apex:outputText>
+        </apex:pageBlock>
+        <apex:pageBlock mode="maindetail" id="mainDetailPageBlock">
+            <apex:pageMessages />
+            <apex:pageblocksection id="pageBlockSection">
+              <!--  <apex:inputcheckbox value="{!isCreateChangeOrderonOverage}" label="Create Change Order on Overage">
+                </apex:inputcheckbox> -->
+                <apex:inputtext value="{!emailsubject}" label="Email Subject"/>
+                 <apex:inputcheckbox value="{!isUpdatethepricebook}" label="Update Price Book">
+                </apex:inputcheckbox>
+                <apex:inputcheckbox value="{!isCreatePO}" label="Create PO On Vendor Acceptance ">
+                </apex:inputcheckbox>
+                <apex:inputcheckbox value="{!usingcommunities}" label="Using Communities">
+                </apex:inputcheckbox>
+                 <apex:inputcheckbox value="{!isPrequalified}" label="Is Pre Qualified">
+                </apex:inputcheckbox>
+                <apex:inputcheckbox value="{!isCheckPortalUsers}" label="Only RFQ Portal Users">
+                </apex:inputcheckbox>
+                <apex:inputcheckbox value="{!anticipatedStartDate}" label="Display Anticipated Start Date">
+                </apex:inputcheckbox>
+                <apex:inputcheckbox value="{!anticipatedFinishDate}" label="Display Anticipated Finish Date">
+                </apex:inputcheckbox>
+                <apex:inputcheckbox value="{!showUOMField}" label="Display UOM Field">
+                </apex:inputcheckbox>
+                <!-- using product checkbox -->
+                <apex:inputcheckbox value="{!isUsingProduct}" label="Using Product">
+                </apex:inputcheckbox> 
+                <apex:inputcheckbox value="{!isCheckDoNotSendAwardEmail}" label="Do not send Award email">
+                </apex:inputcheckbox> 
+                <apex:inputcheckbox value="{!showPublicFolderField}" label="Hide Public Folder">
+                </apex:inputcheckbox> 
+                <label for="head"  style="margin-left: 100px;">Color Code</label>
+                <input type="color" id="head" name="ColorCode" onchange="updateColorCode(this.value)" value="{!colorcode}" style="margin-left: 23px;"/>  
+                <apex:inputHidden value="{!colorcode}" id="colorCodeInput"/>
+
+                <!-- <apex:inputField styleClass="color" value="{!adminterface.buildertek__Color_code__c}" label="Color Code"/> -->
+                <center>
+                <apex:commandButton value="Save" id="onCreateChangeOrderonOverage" styleClass="slds-button slds-button_brand" action="{!onCreateChangeOrderonOverage}"></apex:commandButton>
+                </center>
+            </apex:pageblocksection>
+        </apex:pageBlock>
+    </apex:form>
+        <script type="text/javascript"> 
+       function updateColorCode(color) {
+        console.log(color);
+        document.getElementById('{!$Component.frmConfigure.mainDetailPageBlock.pageBlockSection.colorCodeInput}').value = color;
+        console.log(document.getElementById('{!$Component.frmConfigure.mainDetailPageBlock.pageBlockSection.colorCodeInput}').value );
+    }
+    </script>
+</apex:page>

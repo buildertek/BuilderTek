@@ -1,0 +1,169 @@
+<template>
+    <div if:false={recordId}>
+        <lightning-card title="Manage Schedule Resources" icon-name="custom:custom14">
+            <div class="slds-p-around_x-small picklistcombo">
+                <div class="picklist">
+                    <lightning-combobox name="project" value={selectedProjectId} options={projectOptions}
+                        onchange={handleChange} placeholder="Select Project"></lightning-combobox>
+                </div>
+                <div class="picklist">
+                    <lightning-combobox name="schedule" value={selectedScheduleId} options={SchedulesOptions}
+                        onchange={handleChange} placeholder="Select Schedule"></lightning-combobox>
+                </div>
+                <div class="btnContainer">
+                    <lightning-button variant="brand" type="submit" label="Manage Schedule"
+                        onclick={handleScheduleClick} disabled={isDisabled}></lightning-button>
+                </div>
+            </div>
+        </lightning-card>
+    </div>
+
+    <div if:true={isScheduleSelected}>
+        <lightning-card class="custom-card">
+            <div class="slds-p-around_medium">
+                <div class="slds-grid slds-gutters header-row">
+                    <div class="slds-col">
+                        <p class="header-text">Task Name</p>
+                    </div>
+                    <div class="slds-col">
+                        <p class="header-text">StartDate</p>
+                    </div>
+                    <div class="slds-col">
+                        <p class="header-text">EndDate</p>
+                    </div>
+                    <div class="slds-col">
+                        <p class="header-text">Internal Resource</p>
+                    </div>
+                    <div class="slds-col">
+                        <p class="header-text">Internal Resource 1</p>
+                    </div>
+                    <div class="slds-col">
+                        <p class="header-text">Internal Resource 2</p>
+                    </div>
+                    <div class="slds-col">
+                        <p class="header-text">Internal Resource 3</p>
+                    </div>
+                    <div class="slds-col">
+                        <p class="header-text">Vendor</p>
+                    </div>
+                    <div class="slds-col">
+                        <p class="header-text">Vendor Resources 1</p>
+                    </div>
+                    <div class="slds-col">
+                        <p class="header-text">Vendor Resources 2</p>
+                    </div>
+                    <div class="slds-col">
+                        <p class="header-text">Vendor Resources 3</p>
+                    </div>
+                </div>
+                <div class="recordValues">
+                    <template for:each={tableData} for:item="row">
+                        <div key={row.id} data-id={row.id} class="slds-grid slds-gutters data-row" style="background-color: rgb(255, 186, 188);">
+                            <template if:true={row.isEditing}>
+                                <div class="slds-col slds-truncate">
+                                    <p class="record-value">{row.taskName}</p>
+                                </div>
+                                <div class="slds-col">
+                                    <p class="record-value">{row.startDate}</p>
+                                </div>
+                                <div class="slds-col">
+                                    <p class="record-value">{row.endDate}</p>
+                                </div>
+                                <div class="slds-col comboHideLabel">
+                                    <lightning-combobox name="internal resource" value={row.selectedInternalResourceId}
+                                        options={internalResourcesOption} onchange={internalResourceChange}
+                                        placeholder="Select Internal Resource"
+                                        class="fixed-width-dropdown"></lightning-combobox>
+                                </div>
+                                <div class="slds-col comboHideLabel">
+                                    <lightning-combobox name="vendor" value={row.selectedVendorId}
+                                        options={vendorOptions} onchange={vendorChange} placeholder="Select Vendor"
+                                        class="fixed-width-dropdown"></lightning-combobox>
+                                </div>
+                                <div class="slds-col comboHideLabel">
+                                    <lightning-combobox name="vendor resource1" value={row.selectedVendorResources1}
+                                        data-field="selectedVendorResources1" options={vendorResourcesOptions}
+                                        onchange={vendorResourcesChange} placeholder="Select Vendor Resources"
+                                        class="fixed-width-dropdown"></lightning-combobox>
+                                </div>
+                                <div class="slds-col comboHideLabel">
+                                    <lightning-combobox name="vendor resource2" value={row.selectedVendorResources2}
+                                        data-field="selectedVendorResources2" options={vendorResourcesOptions}
+                                        onchange={vendorResourcesChange} placeholder="Select Vendor Resources"
+                                        class="fixed-width-dropdown"></lightning-combobox>
+                                </div>
+                                <div class="slds-col comboHideLabel">
+                                    <lightning-combobox name="vendor resource3" value={row.selectedVendorResources3}
+                                        data-field="selectedVendorResources3" options={vendorResourcesOptions}
+                                        onchange={vendorResourcesChange} placeholder="Select Vendor Resources"
+                                        class="fixed-width-dropdown"></lightning-combobox>
+                                </div>
+                                <div class="slds-col icons">
+                                    <lightning-icon icon-name='utility:save' alternative-text='save' size='x-small'
+                                        title='save' onclick={saveResource} data-id={row.id}></lightning-icon>
+                                    <lightning-icon icon-name='utility:close' alternative-text='close' size='x-small'
+                                        title='close' onclick={closeEditFields} data-id={row.id}></lightning-icon>
+                                </div>
+                            </template>
+                            <template if:false={row.isEditing}>
+                                <div class="slds-col slds-truncate">
+                                    <p class="record-value">{row.taskName}</p>
+                                </div>
+                                <div class="slds-col slds-truncate">
+                                    <p class="record-value">{row.startDate}</p>
+                                </div>
+                                <div class="slds-col slds-truncate">
+                                    <p class="record-value">{row.endDate}</p>
+                                </div>
+                                <div class="slds-col slds-truncate">
+                                    <p class="record-value">{row.internalResource}</p>
+                                </div>
+                                <div class="slds-col slds-truncate">
+                                    <p class="record-value">{row.internalResource1}</p>
+                                </div>
+                                <div class="slds-col slds-truncate">
+                                    <p class="record-value">{row.internalResource2}</p>
+                                </div>
+                                <div class="slds-col slds-truncate">
+                                    <p class="record-value">{row.internalResource3}</p>
+                                </div>
+                                <div class="slds-col slds-truncate">
+                                    <p class="record-value" data-vendorid={row.vendorId} data-name="vendor"
+                                        >{row.vendor}</p>
+                                </div>
+                                <div class="slds-col slds-truncate">
+                                    <p class="record-value" data-vendorid={row.vendorResources1Id} data-name="resource"
+                                        >{row.vendorResources1}</p>
+                                </div>
+                                <div class="slds-col slds-truncate">
+                                    <p class="record-value" data-vendorid={row.vendorResources2Id} data-name="resource"
+                                        >
+                                        {row.vendorResources2}</p>
+                                </div>
+                                <div class="slds-col slds-truncate">
+                                    <p class="record-value" data-vendorid={row.vendorResources3Id} data-name="resource"
+                                        >
+                                        {row.vendorResources3}</p>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </lightning-card>
+    </div>
+
+    <!-- Spinner -->
+    <template if:true={isLoading}>
+        <div class="slds-spinner_container" style="position:fixed;">
+            <div class="slds-spinner--brand slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+                <div class="spinnerText">
+                    <b>Processing, Please Wait</b>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

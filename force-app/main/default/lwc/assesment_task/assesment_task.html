@@ -1,0 +1,10 @@
+<template>
+        <lightning-card class="slds-m-left_x-large" title="Upload CSV File and Create Contact Records">
+            <lightning-file-upload
+                label="Upload Excel File"
+                accept=".csv"
+                onuploadfinished={handleUploadFinished}
+            ></lightning-file-upload>
+            <lightning-button label="Create Records" onclick={createRecords}></lightning-button>
+        </lightning-card>
+</template>

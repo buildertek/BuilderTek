@@ -1,0 +1,122 @@
+<aura:component controller="ImportSOVonBudgetController"
+    implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader"
+    access="global">
+
+    <aura:attribute name="sovList" type="Object[]" />
+    <aura:attribute name="recordId" type="String" />
+    <aura:attribute name="searchKeyword" type="String" default="" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+
+    <aura:html tag="style">
+        .lbl .slds-form-element__label{
+            display: none;
+        }
+        .slds-modal__container {
+            max-width: 52rem !important;
+            width: 52% !important;
+        }
+        .cuf-content {
+            padding: 0 !important;
+        }
+        .slds-p-around--medium {
+            padding: 0 !important;
+        }
+        .slds-modal__content {
+            height: unset !important;
+            max-height: unset !important;
+            box-shadow: none !important;
+        }
+        .scrollable {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .lbl {
+            padding-bottom: 10px;
+        }
+
+        .truncate {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+        }
+
+        .slds-table_fixed-layout {
+            table-layout: fixed;
+        }
+
+        .slds-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+    </aura:html>
+
+    <div class="slds-modal__header" style="font-size:17px;">
+        Import SOV(s)
+    </div>
+
+    <div class="slds-modal__content slds-p-around--large">
+        <div class="slds slds-scope">
+
+            <lightning:layoutItem size="12">
+                <lightning:input class="lbl" value="{!v.searchKeyword}" placeholder="Search By SOV Name..."
+                    name="searchField" onchange="{! c.onSearch }" />
+            </lightning:layoutItem>
+
+            <aura:if isTrue="{!not(empty(v.sovList))}">
+                <div class="container" style="max-height: 400px; overflow:auto;">
+                    <table class="slds-table slds-table_bordered slds-table_fixed-layout" role="grid">
+                        <thead>
+                            <tr class="slds-text-title_caps">
+                                <th scope="col" style="background-color:rgba(27, 82, 151, 1.0); color:white; vertical-align: middle; line-height: 2; width:30px;"></th>
+                                <th style="background-color:rgba(27, 82, 151, 1.0); color:white; vertical-align: top; line-height: 2;">Name</th>
+                                <th style="background-color:rgba(27, 82, 151, 1.0); color:white; vertical-align: top; line-height: 2;">Vendor</th>
+                                <th style="background-color:rgba(27, 82, 151, 1.0); color:white; vertical-align: top; line-height: 2;">Status</th>
+                                <th style="background-color:rgba(27, 82, 151, 1.0); color:white; vertical-align: top; line-height: 2;">Total Costs</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration items="{!v.sovList}" var="rec">
+                                <tr class="slds-hint-parent">
+                                    <td style="width:50px;">
+                                        <ui:inputCheckbox aura:id="checkContractor" value="false" text="{!rec.sovRecord.Id}" change="{!c.handleCheck}" />
+                                    </td> 
+                                    <td role="gridcell" class="truncate">
+                                        <ui:outputText value="{!rec.sovRecord.Name}" />  
+                                    </td>
+                                    <td role="gridcell" class="truncate">
+                                        <ui:outputText value="{!rec.sovRecord.buildertek__Vendor__r.Name}" />  
+                                    </td>
+                                    <td role="gridcell">
+                                        <ui:outputText value="{!rec.sovRecord.buildertek__Status__c}" />  
+                                    </td>
+                                    <td role="gridcell">
+                                        <lightning:formattedNumber value="{!rec.sovRecord.buildertek__Total_Costs__c}" style="currency" />
+                                    </td>
+                                </tr>
+                            </aura:iteration>
+                        </tbody>
+                    </table>
+                </div>
+
+                <aura:set attribute="else">
+                    <div class="slds-align slds-text-align--center">
+                        <p>No SOV's found</p>
+                    </div>
+                </aura:set>
+            </aura:if>
+        </div>
+    </div>
+
+    <div class="slds-modal__footer">
+        <button class="slds-button slds-button--neutral" onclick="{!c.closeModel}">Cancel</button>
+        <button class="slds-button slds-button--brand" onclick="{!c.importSOV}">Import SOV</button>
+    </div>
+
+    <lightning:notificationsLibrary aura:id="notifLib" />
+    <c:BT_Spinner />
+
+</aura:component>

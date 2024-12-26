@@ -1,0 +1,46 @@
+.spinner-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.5);
+    z-index: 9999;
+    pointer-events: none;
+}
+
+.modal-footer{
+    display: flex;
+    justify-content: end;
+    gap: 8px;
+}
+
+.slds-modal__container_custom {
+    max-height: 90vh;
+    max-width: 70vw;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    position: fixed;
+}
+
+.c-container {
+    width: 100%;
+}
+
+.content-scrollable {
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.slds-backdrop_open {
+    background-color: rgba(0, 0, 0, 0.5);
+}

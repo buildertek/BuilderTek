@@ -1,0 +1,92 @@
+<template>
+    <lightning-card>
+        <div class="header_css">
+            <div class="heading_bt">BT Walk Through Line Items</div>
+            <div class="button_group">
+                <button onclick={handleClick}>
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 5.71429H5.71429V10H4.28571V5.71429H0V4.28571H4.28571V0H5.71429V4.28571H10V5.71429Z" fill="#0176D3"/>
+                    </svg>                        
+                </button>
+            </div>
+        </div>
+        <div class="datatable_class" if:true={isColumnsDataAvailable}>
+            <template if:true={reloadVar}>
+                <div class="inside_dt_cls">
+                    <lightning-datatable key-field="id" data={data} columns={columns} hide-checkbox-column
+                    draft-values={fldsItemValues} show-row-number-column onrowaction={handleRowAction}> 
+                    </lightning-datatable>
+                </div>
+            </template>
+        </div>
+        <!-- <div class="slds-p-around_x-small" style="height: 75vh;overflow: auto;padding: 1rem;">
+            <table>
+                <thead>
+                    <tr>
+                        <template for:each={columns} for:item="col" for:index="indexVar">
+                            <th key={col.fieldName} class="slds-size_3-of-10" scope="col">
+                                <div class="slds-truncate" title={col.label}>{col.label}</div>
+                            </th>
+                        </template>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={data1} for:item="acc" for:index="index">
+                        <tr key={acc.Id}>
+                            <td>
+                                <div class="td_div_class">
+                                    {acc.buildertek__Description__c}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="td_div_class">
+                                    {acc.buildertek__Details__c}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="td_div_class">
+                                    {acc.buildertek__Quantity__c}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="td_div_class">
+                                    {acc.buildertek__Price__c}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="td_div_class">
+                                    {acc.buildertek__Anticipated_Start_Date__c}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="td_div_class">
+                                    {acc.buildertek__Anticipated_Finish_Date__c}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="td_div_class">
+                                    {acc.buildertek__Notes__c}
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div> -->
+
+        
+        
+    </lightning-card>
+
+    <template if:true={showNewModel}>
+        <!-- <div class="popup-container">
+            <div class="backdrop"></div>
+            <div class="popup"> -->
+                <c-new-walk-through-line-cmp></c-new-walk-through-line-cmp>
+            <!-- </div>
+        </div> -->
+        <!-- <section> -->
+            
+        <!-- </section> -->
+    </template>
+</template>

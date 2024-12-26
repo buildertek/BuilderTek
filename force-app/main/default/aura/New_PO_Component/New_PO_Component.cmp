@@ -1,0 +1,277 @@
+<aura:component implements="force:hasRecordId,force:lightningQuickActionWithoutHeader,lightning:actionOverride"
+    access="global" controller="New_PO_ComponentController">
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <!-- <ltng:require styles="{!$Resource.ModalPreview62moreMedia}" /> -->
+    <lightning:notificationsLibrary aura:id="notifLib" />
+    <lightning:workspaceAPI aura:id="workspace" />
+    <aura:attribute name="listOfFields0" type="List" />
+    <aura:attribute name="isSaveNew" type="boolean" default="false" />
+    <aura:attribute name="saveAndNew" type="Boolean" default="false" />
+    <aura:attribute name="parentprojectRecordId" type="String" default="" />
+    <aura:attribute name="paddingClass" type="String" default="" />
+    <aura:attribute name="parentRecordId" type="String" default="" />
+    <aura:attribute name="Spinner" type="boolean" default="false" />
+    <aura:attribute name="MainContainer" type="boolean" default="false" />
+    <aura:attribute name="ProjectContainer" type="boolean" default="false" />
+    <aura:attribute name="recordTypePage" type="boolean" default="true" />
+    <aura:attribute name="listOfFields1" type="List" />
+    <aura:attribute name="customerId" type="String" default="" />
+    <aura:attribute name="listOfFieldsofPOLine" type="List" />
+    <aura:attribute name="listofPOItems" type="List" />
+    <aura:attribute name="listofPoLineFieldSetCol" type="List" />
+    <aura:attribute name="PoLineFieldSet" type="List" />
+    <aura:attribute name="pricebookoptions" type="List" />
+    <aura:attribute name="pricebookName" type="string" default=""/>
+    <aura:attribute name="productfamily" type="string" />
+    <aura:attribute name="productfamilyoptions" type="List" />
+    <aura:attribute name="listofproductfamily" type="List" />
+
+    <aura:attribute name="dynamicKeys" type="List" />
+    <!-- selection of record type attributes -->
+    <aura:attribute name="options" type="List" />
+    <aura:attribute name="value" type="String" />
+    <aura:attribute name="recordTypeName" type="String" default="" />
+
+    <aura:handler name="oClearRecordEvent" event="c:BT_LightningLookupEvent" action="{!c.clearSelectedHandler}" />
+    <aura:handler name="oSelectedRecordEvent" event="c:BT_LightningLookupEvent" action="{!c.ProductSelectHandler}" />
+
+    <aura:if isTrue="{!v.Spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+                <div class="custom-loading-text">
+                    <b>Processing, Please Wait</b>
+                </div>
+            </div>
+        </div>
+    </aura:if>
+
+    <aura:html tag="style">
+        .medium-width-modal{
+            width: 100% !important;
+        }
+
+        .full-width-modal{
+            width: 100% !important;
+        }
+
+        .slds-modal__container{
+            <!-- width: 92% !important; -->
+            padding: 0 !important;
+            max-width: unset !important;
+        }
+        .slds-form-element_stacked{
+        margin: 0 !important;
+        }
+    </aura:html>
+    <aura:if isTrue="{!v.MainContainer}">
+        <div class="slds-modal__container full-width-modal">
+            <header class="slds-modal__header">
+                <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">New {!v.recordTypeName}
+                    Purchase Order</h2>
+            </header>
+            <div class="slds-modal__content" id="modal-content-id-1">
+                <lightning:recordEditForm aura:id="recordViewForm" objectApiName="buildertek__Purchase_Order__c"
+                    onsubmit="{!c.handleSubmit}" density="Comfy">
+                    <div class="" style="width:100%;overflow: auto;height: 63vh;">
+                        <div class="slds-p-around_medium" style="background-color:white;">
+                            <lightning:layout multipleRows="true">
+                                <aura:iteration items="{!v.listOfFields0}" var="field">
+                                    <lightning:layoutItem size="12" mediumDeviceSize="6" padding="around-small">
+                                        <aura:if
+                                            isTrue="{!and(field.name!='buildertek__Project__c',field.name!='Name')}">
+                                            <lightning:inputField fieldName="{!field.name}" />
+                                            <aura:set attribute="else">
+                                                <aura:if isTrue="{!field.name=='Name'}">
+                                                    <lightning:inputField fieldName="Name" required="true" />
+                                                </aura:if>
+                                                <aura:if isTrue="{!field.name=='buildertek__Project__c'}">
+                                                    <lightning:inputField fieldName="{!field.name}"
+                                                        value="{!v.parentprojectRecordId}" />
+                                                </aura:if>
+                                            </aura:set>
+                                        </aura:if>
+                                    </lightning:layoutItem>
+                                </aura:iteration>
+                            </lightning:layout>
+                        </div>
+                    </div>
+                    <footer aura:id="footer" class="slds-modal__footer">
+                        <lightning:button variant="neutral" title="Cancel" label="Cancel" onclick="{! c.closeModel }" />
+                        <lightning:button variant="neutral" type="submit" title="Save &amp; New" label="Save &amp; New"
+                            onclick="{!c.handlesaveNnew}" />
+                        <lightning:button variant="brand" type="submit" name="save" label="Save"
+                            disabled="{!v.isDisabled}" />
+                    </footer>
+                </lightning:recordEditForm>
+            </div>
+        </div>
+    </aura:if>
+    <aura:if isTrue="{!v.ProjectContainer}">
+        <div class="slds-modal__container medium-width-modal">
+            <header class="slds-modal__header">
+                <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate"> New {!v.recordTypeName}
+                    Purchase Order</h2>
+            </header>
+            <div class="slds-modal__content" id="modal-content-id-1">
+                <lightning:recordEditForm aura:id="recordViewForm" objectApiName="buildertek__Purchase_Order__c"
+                    onsubmit="{!c.handleSubmit}" density="Comfy">
+                    <div class="" style="width:100%;overflow: auto;">
+                        <div class="slds-p-around_medium" style="background-color:white;">
+                            <h2 class="slds-section-title--divider">Information</h2>
+                            <lightning:layout multipleRows="true">
+                                <aura:iteration items="{!v.listOfFields0}" var="field">
+                                    <lightning:layoutItem size="12" mediumDeviceSize="6" padding="around-small">
+                                        <aura:if
+                                            isTrue="{!and(field.name!='buildertek__Project__c',field.name!='buildertek__Vendor__c')}">
+                                            <lightning:inputField fieldName="{!field.name}" />
+                                            <aura:set attribute="else">
+                                                <!-- <aura:if isTrue="{!field.name=='Name'}" >
+                                                    <lightning:inputField fieldName="Name" required="true"/>
+                                                </aura:if> -->
+                                                <aura:if isTrue="{!field.name=='buildertek__Project__c'}">
+                                                    <lightning:inputField fieldName="{!field.name}"
+                                                        value="{!v.parentprojectRecordId}" />
+                                                </aura:if>
+                                                <aura:if isTrue="{!field.name=='buildertek__Vendor__c'}">
+                                                    <lightning:inputField fieldName="{!field.name}"
+                                                        value="{!v.customerId}" required="true" />
+                                                </aura:if>
+                                            </aura:set>
+                                        </aura:if>
+                                    </lightning:layoutItem>
+                                </aura:iteration>
+                            </lightning:layout>
+                            <br />
+                            <h2 class="slds-section-title--divider">Purchase Order Lines</h2>
+                            <br />
+                            <div style="width: 100%; max-width: 100%; overflow: auto;" class="{!v.paddingClass}">
+                                <table class="slds-table slds-table_cell-buffer slds-table_bordered"
+                                    aria-label="Example default base table of Opportunities">
+                                    <thead>
+                                        <tr class="slds-line-height_reset">
+                                            <aura:iteration items="{!v.listofPoLineFieldSetCol}" var="column">
+                                                <aura:if isTrue="{!column.name == 'Product'}">
+                                                    <th class="" scope="col">
+                                                        <div class="slds-truncate">Pricebook</div>
+                                                    </th>
+                                                    <th class="" scope="col">
+                                                        <div class="slds-truncate">Product Family</div>
+                                                    </th>
+                                                    <th class="" scope="col">
+                                                        <div class="slds-truncate">{!column.name}</div>
+                                                    </th>
+                                                </aura:if>
+
+                                                <aura:if isTrue="{!column.name != 'Product'}">
+                                                    <th class="" scope="col">
+                                                        <div class="slds-truncate">{!column.name}</div>
+                                                    </th>
+                                                </aura:if>
+                                            </aura:iteration>
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate"></div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <aura:iteration items="{!v.listofPOItems}" var="item" indexVar="index">
+                                            <tr class="slds-hint-parent">
+                                                <aura:iteration items="{!v.PoLineFieldSet}" var="field">
+                                                    <!-- <td data-label="PO Item Name">
+                                                        <lightning:input aura:id="poItemName" value="{!field.Name}" />
+                                                    </td> -->
+                                                    <aura:if isTrue="{!field.name == 'buildertek__Product__c'}">
+                                                        <td style="max-width: 15rem; min-width: 15rem;">
+                                                            <lightning:select title="{!index}" value="{!item.pricebookName}" onchange="{!c.handlePricebookChange}"
+                                                                class="hideLabel">
+                                                                <aura:iteration var="option" items="{!v.pricebookoptions}">
+                                                                    <option value="{!option.value}">{!option.key}</option>
+                                                                </aura:iteration>
+                                                            </lightning:select>
+                                                        </td>
+                                                        
+                                                        <td style="max-width: 15rem; min-width: 15rem;">
+                                                            <lightning:select title="{!index}" value="{!item.productfamily}" onchange="{!c.handleProductFamilyChange}"
+                                                                class="hideLabel">
+                                                                <aura:iteration var="option" items="{!item.productfamilyOptions}">
+                                                                    <option value="{!option.productfamilyvalues}">{!option.productfamilyvalues}</option>
+                                                                </aura:iteration>
+                                                            </lightning:select>
+                                                        </td>
+                                                        
+                                                        <td style="max-width: 15rem; min-width: 15rem;">
+                                                            <c:BT_LightningLookup objectAPIName="Product2" IconName="standard:product"
+                                                                selectedRecord="{!item.buildertek__Product__r}" aura:id="productId" prodctfamly="{!item.productfamily}"
+                                                                parentId="{!item.pricebookName}" index="{!index}" />
+                                                        </td>
+                                                        <aura:set attribute="else">
+                                                            <aura:if isTrue="{!or(field.type == 'CURRENCY', field.type == 'DOUBLE')}">
+                                                                <td style="max-width: 8rem; min-width: 8rem;">
+                                                                    <c:BT_FieldSetMassUpdate record="{!item}" index="{!index}" field="{!field}" isMassUpdateEnable="true"
+                                                                        childObjectName="buildertek__Purchase_Order_Item__c" />
+                                                                </td>
+                                                                <aura:set attribute="else">
+                                                                    <td style="max-width: 15rem; min-width: 15rem;">
+                                                                        <c:BT_FieldSetMassUpdate record="{!item}" index="{!index}" field="{!field}" isMassUpdateEnable="true"
+                                                                            childObjectName="buildertek__Purchase_Order_Item__c" />
+                                                                    </td>
+                                                                </aura:set>
+                                                            </aura:if>
+                                                        </aura:set>
+                                                    </aura:if>
+                                                </aura:iteration>
+                                                <!-- <td data-label="Quantity">
+                                                    <lightning:input type="number" aura:id="quantity" value="{!item.buildertek__Quantity__c}" />
+                                                </td>
+                                                <td data-label="Unit Cost">
+                                                    <lightning:input type="number" step="0.01" aura:id="unitCost" value="{!item.buildertek__Unit_Price__c}" />
+                                                </td> -->
+                                                <td>
+                                                    <span data-id="{!item.index}" onclick="{!c.removePOLine}">
+                                                        <lightning:icon iconName="action:delete" size="x-small" alternativeText="Error!" variant="error"
+                                                            class="imageAction" />
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </aura:iteration>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <br />
+                            <lightning:button variant="brand" label="Add New Row" onclick="{!c.addNewRow}" />
+                        </div>
+                    </div>
+                    <footer aura:id="footer" class="slds-modal__footer">
+                        <lightning:button variant="neutral" title="Cancel" label="Cancel" onclick="{! c.closeModel }" />
+                        <lightning:button variant="neutral" type="submit" title="Save &amp; New" label="Save &amp; New"
+                            onclick="{!c.handlesaveNnew}" />
+                        <lightning:button variant="brand" type="submit" name="save" label="Save"
+                            disabled="{!v.isDisabled}" />
+                    </footer>
+                </lightning:recordEditForm>
+            </div>
+        </div>
+    </aura:if>
+
+    <aura:if isTrue="{!v.recordTypePage}">
+        <div class="slds-modal__container" style="height: 40rem;">
+            <header class="slds-modal__header">
+                <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate"> New Purchase Order</h2>
+            </header>
+            <div class="slds-modal__content" id="modal-content-id-1" style="padding: 2rem;">
+                <lightning:radioGroup name="radioGroup" label="Select PO Type" options="{! v.options }"
+                    value="{! v.value }" type="radio" />
+            </div>
+            <footer aura:id="footer" class="slds-modal__footer">
+                <lightning:button variant="neutral" title="Cancel" label="Cancel" onclick="{! c.closeModel }" />
+                <lightning:button variant="neutral" type="submit" title="Next" label="Next"
+                    onclick="{! c.handleNext }" />
+            </footer>
+        </div>
+    </aura:if>
+
+</aura:component>

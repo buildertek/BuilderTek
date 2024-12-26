@@ -1,0 +1,136 @@
+<aura:component controller="ScheduleCalendarController"
+implements="force:appHostable,flexipage:availableForAllPageTypes,force:hasRecordId" access="global">
+<aura:attribute name="projectsList" type="list" />
+<aura:attribute name="scheduleItemsList" type="list" />
+<!-- <aura:attribute name="selectedScheduleStatus" type="String" default="Active"/> -->
+    <aura:attribute name="selectedProjectId" type="String" default="" /> <!-- All -->
+    <aura:attribute name="selectedTradeTypeId" type="String" default="" /> <!-- All -->
+    <aura:attribute name="selectedVendorId" type="String" default="" /> <!-- All -->
+
+    <aura:attribute name="selectedProjectIdName" type="String" default="" /> <!-- All -->
+    <aura:attribute name="selectedTradeTypeIdName" type="String" default="" /> <!-- All -->
+    <aura:attribute name="selectedVendorIdName" type="String" default="" /> <!-- All -->
+
+
+    <aura:attribute name="selectedTask" type="sObject" default="{}" />
+    <aura:attribute name="selectedVendor" type="sObject" default="{}" />
+    <aura:attribute name="selectedproject" type="sObject[]" />
+    <aura:attribute name="selectedTradetype" type="sObject" default="{}" />
+
+    <aura:attribute name="scheduleStatusList" type="list" />
+    <aura:attribute name="tradeTypesList" type="list" />
+    <aura:attribute name="vendorsList" type="list" />
+    <aura:attribute name="selectedEvents" type="list" />
+    <aura:attribute name="recordId" type="String" />
+    <aura:attribute name="finishDate" type="String" />
+    <aura:attribute name="endDate" type="String" />
+    <aura:attribute name="Spinner" type="Boolean" />
+    <aura:attribute name="defaultDate" type="Date" />
+    <aura:attribute name="ProjectRecordList" type="sObject[]" />
+    <aura:attribute name="TasksRecordList" type="sObject[]" />
+    <aura:attribute name="showTaskLookup" type="Boolean" default="true" />
+    <aura:attribute name="searchTaskName" type="String" default="" />
+    <aura:attribute name="searchTradeTypeName" type="String" default="" />
+    <aura:attribute name="searchVendorName" type="String" default="" />
+    <aura:attribute name="searchProjectName" type="String" default="" />
+    <aura:attribute name="searchProjectList" type="String[]" default="[]" />
+    <aura:attribute name="searchTaskList" type="String[]" default="[]" />
+    <aura:attribute name="searchTradeTypeList" type="String[]" default="[]" />
+    <aura:attribute name="searchVendorList" type="String[]" default="[]" />
+    <aura:attribute name="searchTimeout" type="Object" />
+
+    <ltng:require styles="{!$Resource.ResourceCss3}" />
+    <ltng:require styles="{!$Resource.FullCalendarJS     + '/FullCalendar/fullcalendar.min.css'}" scripts="{!join(',',
+                           $Resource.FullCalendarJS  + '/FullCalendar/jquery.min.js',
+                           $Resource.FullCalendarJS  + '/FullCalendar/moment.js',
+                           $Resource.FullCalendarJS  + '/FullCalendar/fullcalendar.js',
+                            $Resource.FullCalendarJS  + '/FullCalendar/theme.js'
+                           )}" afterScriptsLoaded="{!c.afterScriptsLoaded}" />
+
+    <ltng:require styles="{!$Resource.FontAwesome}" />
+    <ltng:require styles="{!$Resource.DateTimePicker}" />
+    <lightning:workspaceAPI aura:id="workspacecalendar" />
+    <aura:handler name="change" value="{!v.finishDate}" action="{!c.startDateChange}" />
+    <aura:handler name="change" value="{!v.endDate}" action="{!c.endDateChange}" />
+
+    <aura:html tag="style">
+        .fc-more {
+        color: #1b5297;
+        font-weight: bold;
+        cursor: pointer;
+        }
+
+        .fc-more-popover {
+        max-height: 400px;
+        overflow-y: auto;
+        }
+
+        .fc-toolbar .fc-state-active {
+        z-index: 0 !important;
+        }
+        .fc-unthemed .fc-popover {
+        width: 500px;
+        }
+    </aura:html>
+
+
+    <body style="font-family: 'Poppins', sans-serif;background: white">
+        <div class="wrapper">
+            <header style="background: #1b5297;padding: 11px 20px;">
+                <div class="left-box" style="display: inline-block;vertical-align: middle;width: 30%;">
+                    <h1 style="margin: 0;color: #fff;font-size: 18px;">Schedule Dashboard</h1>
+                </div>
+            </header>
+            <div class="slds">
+                <div class="slds-col slds-size_12-of-12 slds-m-top_small slds-p-horizontal_medium">
+                    <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                        <div class="slds-col slds-size_3-of-12 slds-p-horizontal_small">
+                            <lightning:input aura:id="projectInput" name="projectInput" label="Project"
+                                placeholder="Search Project" value="{!v.searchProjectName}"
+                                onchange="{!c.handleSearch}" />
+                        </div>
+                        <div class="slds-col slds-size_3-of-12 slds-p-horizontal_small">
+                            <aura:if isTrue="{!v.showTaskLookup}">
+                                <lightning:input aura:id="taskNameInput" name="taskNameInput" label="Task Name"
+                                    placeholder="Search Task Name" value="{!v.searchTaskName}"
+                                    onchange="{!c.handleSearch}" />
+                            </aura:if>
+                        </div>
+                        <div class="slds-col slds-size_3-of-12 slds-p-horizontal_small">
+                            <lightning:input aura:id="tradeTypeInput" name="tradeTypeInput" label="Trade Type"
+                                placeholder="Search Trade Type" value="{!v.searchTradeTypeName}"
+                                onchange="{!c.handleSearch}" />
+                        </div>
+                        <div class="slds-col slds-size_3-of-12 slds-p-horizontal_small">
+                            <lightning:input aura:id="vendorInput" name="vendorInput" label="Vendor"
+                                placeholder="Search Vendor" value="{!v.searchVendorName}"
+                                onchange="{!c.handleSearch}" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- <div class="slds-col slds-size_2.5-of-12" style="padding-left: 1rem;">
+                    <p style="color: red;" id="noProjectSelected">* Please search a Project(s) to see schedule items</p>
+                </div> -->
+            </div>
+            <div class="inner-wrapper-box" style="padding: 20px;">
+                <div id="wrapper">
+                    <div id="loading"></div>
+                    <div class="print-visible" id="calendar"></div>
+                </div>
+            </div>
+            <aura:if isTrue="{!v.Spinner}">
+                <div aura:id="spinnerId" class="slds-spinner_container">
+                    <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                        <span class="slds-assistive-text">Loading</span>
+                        <div class="slds-spinner__dot-a"></div>
+                        <div class="slds-spinner__dot-b"></div>
+                        <div class="custom-loading-text">
+                            <b>Processing, Please Wait</b>
+                        </div>
+                    </div>
+                </div>
+            </aura:if>
+        </div>
+    </body>
+</aura:component>

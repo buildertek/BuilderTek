@@ -1,0 +1,22 @@
+<apex:component controller="QuoteImageSortController" access="global" >
+    <apex:attribute type="id" name="relatedToId" assignTo="{!quoteId}" description="Related Quote Id" access="global"/>
+        <apex:outputPanel id="imagePanel">
+    
+        <div style="font-size: 23px; font-weight: bold; margin-bottom: 10px; margin-top: 25px; text-align: center;">
+            <apex:outputPanel rendered="{!displayTitle}">
+                Quote Images
+            </apex:outputPanel>
+        </div>
+        <div style="margin-left: 11px; margin-right: 11px; font-size: 0;">
+            <apex:repeat value="{!proposalImages}" var="rec">
+                <apex:outputPanel layout="block" style="display: inline-block; width: 40%; margin: 0 2% 20px; padding: 10px; border: 1px solid #ddd; text-align: left; vertical-align: top; box-sizing: border-box; font-size: 16px;">
+                    <div style="padding-bottom: 8px; font-size: 16px; font-weight: bold;" title="{!rec.Image_Name__c}">
+                        <apex:outputText value="{!IF(LEN(rec.Image_Name__c) > 38, LEFT(rec.Image_Name__c, 38) & '...', rec.Image_Name__c)}" />
+                    </div>
+                    <img src="{!rec.buildertek__Image__c}" alt="Proposal Image" style="width: 100%; height: 350px; border: none; object-fit: cover;" />
+                </apex:outputPanel>
+            </apex:repeat>
+        </div>
+
+        </apex:outputPanel>
+</apex:component>

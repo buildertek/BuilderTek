@@ -1,0 +1,341 @@
+<aura:component
+    implements="force:appHostable,lightning:isUrlAddressable,force:lightningQuickAction,flexipage:availableForRecordHome,flexipage:availableForAllPageTypes,lightning:actionOverride,force:hasRecordId,forceCommunity:availableForAllPageTypes"
+    access="global" controller="MassUpdateTakeOffLines">
+    <aura:attribute name="sObjectName" type="String" />
+    <aura:attribute name="fieldSetName" type="String" />
+    <aura:attribute name="parentId" type="String" />
+    <aura:attribute name="fieldSetValues" type="List" />
+    <aura:attribute name="arrfieldNames" type="List" />
+    <aura:attribute name="tableRecords" type="List" />
+    <aura:attribute name="parentFieldName" type="String" />
+    <aura:attribute name="isCancelModalOpen" type="Boolean" />
+    <aura:attribute name="quoteLineName" type="String" />
+    <aura:attribute name="isModalOpen" type="Boolean" />
+    <aura:attribute name="selectedRecordIndex" type="Integer" />
+    <aura:attribute name="childObjectName" type="String" />
+    <aura:attribute name="parentRecordId" type="String" />
+    <aura:attribute name="fields" type="List" default="[]" />
+    <aura:attribute name="listOfRecords" type="Project__c[]" />
+    <aura:attribute name="cloneListOfRecords" type="Project__c[]" />
+    <aura:attribute name="recordId" type="String" />
+    <aura:attribute name="bomId" type="String" />
+    <aura:attribute name="recordName" type="String" />
+    <aura:attribute name="takeoff" type="String" />
+    <aura:attribute name="phases" type="List"/>
+    <aura:attribute name="selectedPhaseId" type="String"/>
+    <aura:attribute name="phasesList" type="List"/>
+    <aura:attribute name="selectedTakeOffPhaseId" type="String"/>
+    <aura:attribute name="takeoffName" type="String" />
+    <aura:attribute name="showPhaseModal" type="Boolean" />
+    <aura:attribute name="numberOfItems" type="Integer" />
+    <aura:attribute name="statusList" type="List" />
+    <aura:attribute name="priorityList" type="List" />
+    <aura:attribute name="massUpdateEnable" type="Boolean" default="true" />
+    <aura:attribute name="onSaveEnabled" type="Boolean" default="false" />
+    <aura:attribute name="isLoading" type="Boolean" default="false" />
+
+    <aura:attribute name="PageNumber" type="integer" default="1" />
+    <aura:attribute name="pageSize" type="integer" default="50" />
+    <aura:attribute name="TotalPages" type="integer" default="0" />
+    <aura:attribute name="TotalRecords" type="Integer" default="0" />
+    <aura:attribute name="RecordStart" type="integer" default="0" />
+    <aura:attribute name="RecordEnd" type="integer" default="0" />
+    <aura:attribute name="isNextDisabled" type="Boolean" default="true" />
+    
+    <aura:attribute name="listOfSelectedTakeOffIds" type="List" default="[]"/>
+     <aura:attribute name="isMassDeleteClick" type="Boolean" />
+    <aura:attribute name="rerender" type="boolean" default="false"/>
+    <aura:attribute name="currectModifiedIndex" type="Integer"></aura:attribute>
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <lightning:overlayLibrary aura:id="overlayLib" />
+    <lightning:workspaceAPI aura:id="workspace" />
+    <aura:dependency resource="markup://force:navigateToRelatedList" type="EVENT" />
+    <aura:dependency resource="markup://force:navigateToUrl" type="EVENT" />
+    <aura:handler name="change" action="{!c.doInit}" value="{!v.pageReference}" />
+    <!-- <aura:handler event="lightning:tabFocused" action="{! c.refreshPage }" /> -->
+    <aura:attribute name="headers" type="List" />
+    <aura:attribute name="sortDirection" type="string" access="global" default="asc"/>
+    <aura:attribute name="clickedHeaderField" type="string" access="global" default=""/>
+
+    <aura:handler name="onSelectEvt" event="c:BT_LookupEvent" action="{!c.handleLookUpEvent}" />
+    <aura:handler name="oClearRecordEvent" event="c:BT_LightningLookupEvent" action="{!c.clearSelectedHandler}" />
+    <aura:handler name="oSelectedRecordEvent" event="c:BT_LightningLookupEvent" action="{!c.ProductSelectHandler}" />
+
+    <aura:attribute name="ProductPhase_Vs_BuildPhase" type="Map" />
+
+    <lightning:navigation aura:id="goToPrevious" />	
+
+    <aura:html tag="style">
+        .pricebookcls .slds-form-element__label{
+            display: none !important;
+        }
+
+        .slds-form-element_stacked{
+            margin-bottom: 0px !important;
+        }
+        .buildertekBT_LightningLookup.mainDiv {
+            padding-top: 7%;
+        }
+    </aura:html>
+
+    <lightning:card aura:id="lightCard" class="slds-card_boundary">
+        <div class="slds-grid slds-wrap firstRowContainer">
+            <div>
+                <p class="TakeOffHeading">{!v.takeoffName}</p>
+            </div>
+            <div class="btnContainer">
+                <lightning:button iconName="utility:save" iconPosition="left" onclick="{!c.onMassUpdate}"
+                    label="{!v.massUpdateEnable==true?'Save':'Mass Update'}" class="slds-button slds-button_brand" />
+                <aura:if isTrue="{!v.massUpdateEnable}">
+                    <lightning:button iconName="utility:add" iconPosition="left" onclick="{!c.onAddWithPhaseClick}" label="Add"/>
+                    <lightning:button iconName="utility:delete" iconPosition="left" onclick="{!c.onClickDelete}"
+                        label="Delete" class="slds-button slds-button_destructive" />
+    
+                    <lightning:button iconName="utility:close" iconPosition="left" onclick="{!c.onMassUpdateCancel}"
+                        label="Cancel" />
+                </aura:if>
+                <lightning:button iconName="utility:back" iconPosition="left" disabled="{!v.PageNumber == 1}"
+                    aura:id="prevPage" label="Previous" onclick="{!c.handlePrev}" />
+                <lightning:button iconName="utility:forward" iconPosition="right" disabled="{!v.isNextDisabled}"
+                    aura:id="nextPage" label="Next" onclick="{!c.handleNext}" />
+            </div>
+        </div>
+        <div class="slds-grid slds-wrap searchBoxContainer">
+            <lightning:select name="Phases" class="slds-m-right_small" aura:id="searchPhase" value="{!v.selectedTakeOffPhaseId}" onchange="{!c.searchKeyChange}">
+                <aura:iteration items="{!v.phasesList}" var="item">
+                    <option value="{!item.Id}" text="{!item.Name}"></option>
+                </aura:iteration>
+            </lightning:select>
+            <lightning:input type="text" class=" slds-m-right_small" name="SearchProductType" aura:id="SearchProductType"
+                onchange="{!c.searchKeyChange}" placeholder="Search Product Type" />
+            <lightning:input type="text" class="slds-m-right_small" name="searchLocation" aura:id="searchLocation"
+                onchange="{!c.searchKeyChange}" placeholder="Search Location" />
+            <lightning:input type="text" class="slds-m-right_small" name="searchCategory" aura:id="searchCategory"
+                onchange="{!c.searchKeyChange}" placeholder="Search Category" />
+            <lightning:input type="text" class="slds-m-right_small" name="searchTradeType" aura:id="searchTradeType"
+                onchange="{!c.searchKeyChange}" placeholder="Search Trade Type" />
+            <lightning:input type="text" class="slds-m-right_small" name="searchVendor" aura:id="searchVendor"
+                onchange="{!c.searchKeyChange}" placeholder="Search Vendor" />
+            <!-- <lightning:input type="text" class="slds-m-right_small" name="searchPhase" aura:id="searchPhase"
+                onchange="{!c.searchKeyChange}" placeholder="Search Phase" /> -->
+            <lightning:input type="text" name="searchCostCode" aura:id="searchCostCode" onchange="{!c.searchKeyChange}"
+                placeholder="Search Cost Code" />
+        </div>
+        <p class="slds-p-horizontal_medium">
+            {!v.numberOfItems} items •
+            <a onclick="{! c.redirectTakeOff }">TakeOff's</a>
+            >
+            <a onclick="{! c.gotoURL }">{!v.takeoff}</a>
+        </p>
+        <div class="slds-modal__content">
+            <div class="slds-scrollable">
+                <div class="slds slds-m-top_medium slds-p-horizontal_medium slds-table-container">
+                    <aura:iteration items="{!v.listOfRecords}" var="group" indexVar="groupIndex">
+                        <!-- Group Header -->
+                        <div class="group-header-container">
+                            <h3 class="group-header">{!group.buildPhaseName}</h3>
+                            <div>
+                                <span onclick="{!c.onAddClick}" data-id="{!group.buildPhaseId}">
+                                    <lightning:buttonIcon iconName="utility:add" size="large" variant="bare"  alternativeText="Add" iconClass="light" />
+                                </span>
+                            </div>
+                        </div>
+                    
+                        <!-- Start the table for each group -->
+                        <table class="slds-table slds-table_bordered slds-table_cell-buffer groupedContainer">
+                            <thead>
+                                <tr class="slds-line-height_reset">
+                                    <th class="slds-cell-shrink" scope="col">
+                                        <div class="slds-checkbox">
+                                            <!-- <lightning:input type="checkbox" aura:id="headCheckRFQ" checked="false"
+                                                onchange="{!c.selectAllRfq}" /> -->
+                                        </div>
+                                    </th>
+                                    <th></th>
+                                    <th>
+                                        <p>No.</p>
+                                    </th>
+                                    <aura:iteration items="{!v.headers}" var="header">
+                                        <th class="tHeader" data-header="{!header.fieldName}" onclick="{!c.handleArrowClick}">
+                                            {!header.label}
+                                            <lightning:buttonIcon aura:id="{!header.fieldName}" iconName="{!header.iconName}"
+                                                class="clickable-icon white-icon" variant="bare">
+                                            </lightning:buttonIcon>
+                                        </th>
+                                    </aura:iteration>
+                                    <aura:if isTrue="{!v.massUpdateEnable}">
+                                        <th scope="col" class="slds-cell-shrink"><span class="slds-truncate"></span></th>
+                                    </aura:if>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Iterating over each record in the group -->
+                                <aura:iteration items="{!group.takeoffLines}" var="row" indexVar="index">
+                                    <tr style="{!v.massUpdateEnable ? 'height: 4rem;' : 'height:35px; !important'}">
+                                        <td>
+                                            <lightning:input type="checkbox" aura:id="checkRFQ" checked="{!row.isChecked}" name="{!row.Id}"
+                                                onchange="{!c.selectRfq}" />
+                                        </td>
+                                        <td>
+                                            <span onclick="{!c.deleteSingleRecord}" data-id="{!row.Id}" data-index="{!index}" data-groupid="{!group.buildPhaseId}">
+                                                <lightning:icon iconName="utility:delete" size="x-small" />
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <p>{!index + 1}</p>
+                                        </td>
+                                        <aura:iteration items="{!v.fieldSetValues}" var="field">
+                                            <aura:if isTrue="{!field.name == 'buildertek__Price_Book__c'}">
+                                                <td class="pricebookcls" style="max-width: 13rem; min-width: 13rem; ">
+                                                    <c:BT_LightningLookup objectAPIName="Pricebook2" IconName="standard:pricebook"
+                                                    selectedRecord="{!row.buildertek__Price_Book__r}" aura:id="priceBookId"
+                                                    index="{!index}" callingcmp="BT_MassUpdateTakeOffLines"
+                                                    productId="{!row.buildertek__Product__c}" fieldName="pricebook" phaseIndex="{!groupIndex}"/>
+                                                </td>
+                                            </aura:if>
+                                            <aura:if isTrue="{!field.name == 'buildertek__Product__c'}">
+                                                <td class="pricebookcls" style="max-width: 13rem; min-width: 13rem;">
+                                                    <c:BT_LightningLookup objectAPIName="Product2" IconName="standard:product"
+                                                        selectedRecord="{!row.buildertek__Product__r}" aura:id="productId" index="{!index}"
+                                                        callingcmp="BT_MassUpdateTakeOffLines" fieldName="product" phaseIndex="{!groupIndex}" />
+                                                </td>
+                                            </aura:if>
+                                            <aura:if
+                                                isTrue="{!and(field.name != 'buildertek__Price_Book__c', field.name != 'buildertek__Product__c')}">
+                                                <aura:if isTrue="{!!AND(v.currectModifiedIndex == index, v.rerender == true)}">
+                                                    <aura:if
+                                                        isTrue="{!OR(OR(field.type == 'DOUBLE', field.type == 'CURRENCY'), field.type == 'PERCENT')}">
+                                                        <td style="max-width: 5rem; min-width: 5rem;">
+                                                            <c:BT_FieldSetMassUpdate record="{!row}" index="{!index}" field="{!field}"
+                                                                isMassUpdateEnable="{!v.massUpdateEnable}"
+                                                                childObjectName="buildertek__Project_Takeoff_Lines__c" />
+                                                        </td>
+                                                        <aura:set attribute="else">
+                                                            <td style="max-width: 11rem; min-width: 11rem;">
+                                                                <c:BT_FieldSetMassUpdate record="{!row}" index="{!index}" field="{!field}"
+                                                                    isMassUpdateEnable="{!v.massUpdateEnable}"
+                                                                    childObjectName="buildertek__Project_Takeoff_Lines__c" />
+                                                            </td>
+                                                        </aura:set>
+                                                    </aura:if>
+                                                </aura:if>
+                                            </aura:if>
+                                        </aura:iteration>
+                                    </tr>
+                                </aura:iteration>
+                            </tbody>
+                        </table>
+                    </aura:iteration>
+                </div>
+            </div>
+        </div>
+    </lightning:card>
+    <aura:if isTrue="{!v.isModalOpen}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+            aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon iconName="utility:close" onclick="{!c.handleCancel}" alternativeText="close"
+                        size="medium" variant="bare-inverse" class="slds-modal__close" />
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Delete Confirmation
+                    </h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <center><p>Are you sure you want to delete {!v.quoteLineName} ?</p></center>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning:button variant="neutral" label="Cancel" title="Cancel" onclick="{! c.handleCancel }" />
+                    <lightning:button variant="brand" label="Delete" title="Delete" onclick="{!c.handleDelete}" />
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+    <aura:if isTrue="{!v.isCancelModalOpen}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+            aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon iconName="utility:close" onclick="{!c.closeCancelModal}"
+                        alternativeText="close" size="medium" variant="bare-inverse" class="slds-modal__close" />
+                    <center>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Cancel Changes
+                            Confirmation
+                        </h2>
+                    </center>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <Center><p>Are you sure you want to Cancel?</p></Center>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning:button variant="neutral" label="No" title="No" onclick="{! c.closeCancelModal }" />
+                    <lightning:button variant="brand" label="Yes" title="Yes" onclick="{! c.closeScreen }" />
+                    <!-- <ui:outputURL class="slds-button slds-button_brand" value="{!'}" label="Yes" /> -->
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+    <lightning:overlayLibrary aura:id="overlayLib" />
+    <aura:if isTrue="{!v.isLoading}">
+        <!-- <lightning:spinner alternativeText="Loading" variant="brand" size="large" /> -->
+        <div aura:id="spinnerId" class="slds-spinner_container" style="position:fixed;">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+                <div class="custom-loading-text">
+                    <b>Processing, Please Wait</b>
+                </div>
+            </div>
+        </div>
+    </aura:if>
+    
+    
+      <aura:if isTrue='{!v.isMassDeleteClick}'>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+                 aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container" style="min-width:30rem;">
+                <header class="slds-modal__header">
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Delete Selected Takeoff Lines
+                    </h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1" style="min-height:50px; text-align: center;">
+                    Are you sure you want to Delete the Selected TakeOff Lines?
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning:button label="No" title="No" onclick="{!c.cancelDelete}" />
+                    <lightning:button variant="neutral" label="Yes" title="Yes" onclick="{!c.confirmDelete}" />
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+
+    <aura:if isTrue="{!v.showPhaseModal}">
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon iconName="utility:close" alternativeText="close" onclick="{!c.closeModal}"
+                        class="slds-modal__close" />
+                    <h2 class="slds-text-heading_medium">Select a Build Phase</h2>
+                </header>    
+                <div class="slds-modal__content slds-p-around_medium">
+                    <lightning:select label="Build Phase" value="{!v.selectedPhaseId}" onchange="{!c.handlePhaseChange}">
+                        <option value="">-- None --</option>
+                        <aura:iteration items="{!v.phases}" var="phase">
+                            <option value="{!phase.Id}">{!phase.Name}</option>
+                        </aura:iteration>
+                    </lightning:select>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning:button label="Cancel" onclick="{!c.closeModal}" />
+                    <lightning:button label="Next" variant="brand" onclick="{!c.saveSelectedPhase}" />
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+    
+</aura:component>

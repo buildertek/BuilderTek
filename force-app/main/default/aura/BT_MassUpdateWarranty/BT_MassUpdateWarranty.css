@@ -1,0 +1,108 @@
+/*.THIS .label-hidden>label {
+    display: none;
+}
+
+.THIS lightning-icon.some-indicator {
+    background-color: #006DCC;
+    width: 2rem;
+    height: 2rem;
+}
+
+.THIS lightning-icon.some-indicator>lightning-primitive-icon>svg>use {
+    fill: white;
+    background-color: #006DCC;
+    width: 2rem;
+    height: 2rem;
+}
+.THIS .slds-form-element__label {
+    margin-top : -11px;
+    /*display : none !important;
+    visibility : hidden !important;*/
+/*}
+.THIS .caption,
+.THIS .th,
+.THIS .td {
+    text-align: right;
+   
+}*/
+.THIS lightning-icon.some-indicator {
+    background-color: #006DCC;
+    width: 2rem;
+    height: 2rem;
+}
+
+.THIS lightning-icon.some-indicator>lightning-primitive-icon>svg>use {
+    fill: white;
+    background-color: #006DCC;
+    width: 2rem;
+    height: 2rem;
+}
+
+.THIS .slds-form-element__icon {
+    display: none !important;
+}
+
+.THIS .slds-form-element__label {
+    margin-top: 0px;
+    /* display : none;
+        visibility : hidden;*/
+}
+
+.THIS .caption,
+.THIS .th,
+.THIS .th,
+.THIS .td {
+    text-align: right;
+}
+.THIS.slds-textarea{
+    padding-top:1rem !important;
+    padding-bottom:1rem !important;
+}
+
+.THIS .customTable {
+    border: 1px solid #d8dde6;
+    border-radius: 0.25rem;
+    background-color: #f4f6f9;
+    margin-bottom: 2rem;
+}
+
+.THIS .customTable>thead>tr>th {
+    background-color: #f3f2f2;
+    color: #3A84D8;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    line-height: 2rem;
+    padding: 0.5rem;
+    white-space: nowrap;
+}
+
+.THIS .customTable>tbody>tr>td {
+    white-space: nowrap;
+    height: 2rem;
+}
+
+.THIS .firstRowContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-inline: 1rem;
+}
+
+.THIS .WarrantyHeading {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #3A84D8;
+}
+
+.THIS .light {
+    color: #f4f6f9;
+}
+
+.THIS .slds-modal__container {
+    height: 70vh;
+}
+
+.THIS .slds-modal__close {
+    color: #ffffff;
+}

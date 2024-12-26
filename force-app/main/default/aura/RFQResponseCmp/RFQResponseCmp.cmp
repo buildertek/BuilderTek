@@ -1,0 +1,178 @@
+<aura:component
+    implements="flexipage:availableForRecordHome,force:hasRecordId,force:appHostable,lightning:isUrlAddressable"
+    controller="RFQResponseClass" access="global">
+    
+    <aura:attribute name="rfqVendorId" type="String" />
+    <aura:attribute name="recordId" type="String" />
+    <aura:attribute name="data" type="List" />
+    <!-- <aura:attribute name="RFQdata" type="List" /> -->
+    <aura:attribute name="columns" type="List" />
+    <aura:attribute name="processedData" type="List" />
+    <aura:attribute name="fields" type="List" />
+    <aura:attribute name="leftColumnFields" type="List" />
+    <aura:attribute name="rightColumnFields" type="List" />
+    <aura:attribute name="files" type="List" />
+    <aura:attribute name="vendorFiles" type="List" />
+    <aura:attribute name="nameField" type="Object" />
+    <aura:attribute name="RFQData" type="List" />
+    <aura:attribute name="RFQD" type="List" />
+    
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+
+    <div class="slds-container slds-box slds-box_xx-small">
+        <div class="slds-text-align_center slds-m-bottom_medium">
+            <h1><span class="builder">BUILDER</span> <span class="tek">TEK</span></h1>
+        </div>
+        <div class="slds-text-align_center slds-m-bottom_medium">
+            <h1>RFQ: BT Flow Test 1.0</h1>
+        </div>
+        <div class="slds-box slds-box_xx-small slds-border_top slds-border_bottom slds-m-bottom_medium border">
+            <div class="slds-text-heading_small slds-m-bottom_small slds-border_bottom slds-p-bottom_small">
+                RFQ Detail
+            </div>
+
+            <lightning:recordEditForm recordId="{!v.rfqVendorId}" objectApiName="buildertek__RFQ__c" density="compact">
+                <div class="slds-grid slds-wrap">
+                    <!-- Left Column -->
+                    <div class="slds-col slds-size_1-of-2">
+                        <div class="slds-form slds-form_stacked">
+                            <aura:iteration items="{!v.leftColumnFields}" var="field">
+                                <div class="slds-form-element slds-m-bottom_small">
+                                    <div class="slds-form-element">
+                                        <!-- <label class="slds-form-element__label" for="{!field.apiName}">{!field.label} lalal</label> -->
+                                        <div class="slds-form-element__control">
+                                            <aura:if isTrue="{!field.isStatic}">
+                                                <!-- <p>{!field.value} vava</p> -->
+                                            <aura:set attribute="else">
+                                                <lightning:inputField fieldName="{!field.apiName}"  value="{!field.value}" onchange="{!c.chanageGetdata}"  data-field="{!field.apiName}"/>
+                                            </aura:set>
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                </div>
+                            </aura:iteration>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="slds-col slds-size_1-of-2">
+                        <div class="slds-form slds-form_stacked">
+                            <aura:iteration items="{!v.rightColumnFields}" var="field">
+                                <div class="slds-form-element slds-m-bottom_small">
+                                    <div class="slds-form-element">
+                                        <!-- <label class="slds-form-element__label" for="{!field.apiName}">{!field.label}</label> -->
+                                        <div class="slds-form-element__control">
+                                            <aura:if isTrue="{!field.isStatic}">
+                                                <!-- <p>{!field.value} </p> -->
+                                            <aura:set attribute="else">
+                                                <lightning:inputField fieldName="{!field.apiName}" value="{!field.value}" onchange="{!c.chanageGetdata}"  data-field="{!field.apiName}"  />
+                                            </aura:set>
+                                            </aura:if>
+                                        </div>
+                                    </div>
+                                </div>
+                            </aura:iteration>
+                        </div>
+                    </div>
+                </div>
+
+                <lightning:button label="Save" variant="brand" onclick="{!c.SaveRFQ}" />
+            </lightning:recordEditForm>
+
+            <div class="slds-m-top_medium">
+                <lightning:button label="RFQ Button" variant="brand" onclick="{!c.handleClick}" />
+            </div>
+
+            <table class="slds-table slds-table_bordered slds-table_fixed slds-table_resizable slds-m-top_medium">
+                <thead>
+                    <tr>
+                        <aura:iteration items="{!v.columns}" var="column">
+                            <th>{!column.label}</th>
+                        </aura:iteration>
+                    </tr>
+                </thead>
+                <tbody>
+                    <aura:iteration items="{!v.processedData}" var="item">   
+                        <tr>
+                            <aura:iteration items="{!v.columns}" var="column">
+                                <td>
+                                    <aura:if isTrue="{!column.editable}">
+                                        <lightning:input value="" 
+                                            data-fieldname="{!item.fieldName}" data-rowindex="{!item.Id}"
+                                            onchange="{!c.handleInputChange}" />
+                                        <aura:set attribute="else">
+                                            <div class="slds-truncate" title=""> 
+                                                 
+                                            </div>
+                                        </aura:set>
+                                    </aura:if>
+
+                                </td>
+                            </aura:iteration>
+                        </tr>
+                    </aura:iteration>
+                </tbody>
+            </table>
+            <lightning:button label="Save" variant="brand" onclick="{!c.handleClick}" />
+        </div>
+
+        <!-- Related Document Section -->
+        <div class="slds-box slds-box_xx-small slds-border_top slds-border_bottom slds-m-top_medium">
+            <div class="slds-m-bottom_small">
+                <lightning:button label="Related Document" variant="brand" onclick="{!c.handleUploadDocuments}" />
+            </div>
+            <div class="slds-box slds-box_xx-small slds-border slds-m-bottom_medium">
+                <table class="slds-table slds-table_bordered slds-table_fixed slds-table_resizable slds-m-top_medium">
+                    <thead>
+                        <tr>
+                            <th>FILE NAME</th>
+                            <th>DOWNLOAD LINK</th>
+                            <th>ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.files}" var="file">
+                            <tr>
+                                <td>{!file.Title}</td>
+                                <td><a href="{!file.ContentDownloadUrl}" target="_blank">{!file.Title}</a></td>
+                                <td>
+                                    <lightning:button label="Delete" variant="base" onclick="{!c.handleFileDelete}" />
+                                </td>
+                            </tr>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Vendor Document Section -->
+        <div class="slds-box slds-box_xx-small slds-border_top slds-border_bottom slds-m-top_medium">
+            <div class="slds-m-bottom_small">
+                <lightning:button label="Vendor Document" variant="brand" onclick="{!c.handleUploadDocuments}" />
+            </div>
+            <div class="slds-box slds-box_xx-small slds-border slds-m-bottom_medium">
+                <table class="slds-table slds-table_bordered slds-table_fixed slds-table_resizable slds-m-top_medium">
+                    <thead>
+                        <tr>
+                            <th>FILE NAME</th>
+                            <th>DOWNLOAD LINK</th>
+                            <th>ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.vendorFiles}" var="file">
+                            <tr>
+                                <td>{!file.Title}</td>
+                                <td><a href="{!file.ContentDownloadUrl}" target="_blank">{!file.Title}</a></td>
+                                <td>
+                                    <lightning:button label="Delete" variant="base" onclick="{!c.handleFileDelete}" />
+                                </td>
+                            </tr>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</aura:component>

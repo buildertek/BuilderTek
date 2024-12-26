@@ -1,0 +1,13 @@
+.THIS .label-style .slds-form-element__label{
+    font-size: 1rem !important;
+}
+
+.THIS .model-content{
+    height: 15vh;
+    width: 100%;
+    overflow: auto;
+}
+
+.THIS .heading{
+    font-weight: 500;
+}

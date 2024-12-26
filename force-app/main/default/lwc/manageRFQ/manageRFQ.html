@@ -1,0 +1,19 @@
+<template>
+    <div class="manage-po-container">
+        <div class="header">
+            <h1>Manage RFQs</h1>
+        </div>
+        <div class="tabs-container">
+            <div class="tabs">
+                <button class="tab-button active" data-id="email-rfq" onclick={switchTab}>Email RFQ</button>
+                <!-- <button class="tab-button" data-id="mass-void-po" onclick={switchTab}>Mass Void PO</button>
+                <button class="tab-button" data-id="email-po" onclick={switchTab}>Email PO</button> -->
+            </div>
+            <template if:true={showEmailRFQs}>
+                <div class="tab-content" id="email-po">
+                    <c-mass-email-r-f-qs></c-mass-email-r-f-qs>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

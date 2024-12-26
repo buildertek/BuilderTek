@@ -1,0 +1,97 @@
+<aura:component controller="PurchaseOrderDAO"
+    implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader"
+    access="global">
+
+    <!-- Existing attributes -->
+    <aura:attribute name="IsSpinner" type="Boolean" default="false" />
+    <aura:attribute name="showmodal" type="Boolean" default="false" />
+    <aura:attribute name="recordId" type="String" />
+    <aura:attribute name="budgetItems" type="List" />
+    <aura:attribute name="filteredBudgetItems" type="List" />
+    <aura:attribute name="selectedBudgetItem" type="String" />
+    <aura:attribute name="searchKeyword" type="String" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+
+    <ltng:require styles="{!$Resource.MOdalPreviewWidth72}" />
+
+    <aura:if isTrue="{!v.showmodal}">
+        <div class="slds-modal__header">
+            <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Assign to Budget Line</h2>
+        </div>
+        
+        <!-- Search box -->
+        <div style="margin: 10px; padding: 10px; width: auto;">
+            <lightning:input name="search" label="Search by Item Name" 
+                             value="{!v.searchKeyword}" 
+                             onchange="{!c.handleSearchChange}" />
+        </div>
+
+        <div class="slds-scrollable" style="width:100%; max-height: 55vh; overflow: auto;">
+            <div class="slds-modal__content" style="overflow: auto;">
+                <div>
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                        <thead>
+                            <tr class="slds-line-height_reset">
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Select">Select</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Item Name">Item Name</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Amount">Budget Name</div>
+                                </th>
+                                <th scope="col">
+                                    <div class="slds-truncate" title="Description">Amount</div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration items="{!v.filteredBudgetItems}" var="item">
+                                <tr class="slds-hint-parent">
+                                    <td data-label="Select">
+                                        <lightning:input type="radio" name="budgetItem" value="{!item.Id}" 
+                                                         checked="{!v.selectedBudgetItem == item.Id}" 
+                                                         onchange="{!c.handleBudgetItemChange}" />
+                                    </td>
+                                    <td data-label="Item Name">
+                                        <div class="slds-truncate" title="{!item.Name}">{!item.Name}</div>
+                                    </td>
+                                    <td data-label="Budget Name">
+                                        <div class="slds-truncate" title="{!item.buildertek__Budget__r.Name}">{!item.buildertek__Budget__r.Name}</div>
+                                    </td>
+                                    <td data-label="Amount">
+                                        <div class="slds-truncate" title="{!item.buildertek__Budget__r.buildertek__Original_Budget__c}">{!item.buildertek__Budget__r.buildertek__Original_Budget__c}</div>
+                                    </td>
+                                </tr>
+                            </aura:iteration>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="slds-modal__footer">
+            <lightning:button variant="neutral" label="Cancel" onclick="{!c.closeModel}" />
+            <lightning:button aura:id="nextPage" variant="brand" label="Assign Budget Line" onclick="{!c.assignBudgetItem}" />
+        </div>
+    </aura:if>
+
+    <aura:if isTrue="{!v.IsSpinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container" style="position:fixed;">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative"
+                role="alert">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+                <div class="custom-loading-text">
+                    <aura:if isTrue="{!v.showMessage}">
+                        <b>Processing, Please Wait</b>
+                    </aura:if>
+                </div>
+            </div>
+        </div>
+    </aura:if>
+
+    <lightning:notificationsLibrary aura:id="notifLib" />
+</aura:component>

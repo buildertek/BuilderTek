@@ -1,0 +1,225 @@
+<template>
+    <div class="mass-email-rfqs-container">
+        <div if:true={isLoading} class="spinner-container">
+            <lightning-spinner alternative-text="Loading" size="large" variant="brand"></lightning-spinner>
+        </div>
+        
+        <div class="search-and-button">
+            <div class="search-container">
+                <lightning-input type="search" placeholder="Search by RFQ#, Project, Trade Type" value={searchTerm}
+                    variant="label-hidden" onchange={handleSearch}></lightning-input>
+            </div>
+            <lightning-button label="Email RFQ(s)" variant="brand" onclick={handleEmailrfqs}></lightning-button>
+        </div>
+        <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+            <thead>
+                <tr class="slds-line-height_reset">
+                    <th class="slds-size_xx-small" scope="col" style="width: 3rem;">
+                        <lightning-input type="checkbox" variant="label-hidden" data-id="checkAll" onchange={handleSelectAll} checked={allSelected}></lightning-input>
+                    </th>
+                    <th class="" scope="col" style="width: 10rem;">
+                        <div class="slds-truncate" title="rfq #">RFQ#</div>
+                    </th>
+                    <th class="" scope="col" style="width: 20rem;">
+                        <div class="slds-truncate" title="Description">Name</div>
+                    </th>
+                    <th class="" scope="col" style="width: 15rem;">
+                        <div class="slds-truncate" title="Project">Project</div>
+                    </th>
+                    <th class="" scope="col" style="width: 10rem;">
+                        <div class="slds-truncate" title="Vendor">Status</div>
+                    </th>
+                    <th class="" scope="col" style="width: 15rem;">
+                        <div class="slds-truncate" title="Cost Code">Trade Type</div>
+                    </th>
+                    <th class="" scope="col" style="width: 10rem;">
+                        <div class="slds-truncate" title="Due Date">Due Date</div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <template for:each={showrfqData} for:item="rfq" for:index="index">
+                    <tr key={rfq.id} class="slds-hint-parent">
+                        <td class="slds-size_xx-small" style="width: 3rem;">
+                            <lightning-input type="checkbox" variant="label-hidden" data-id={rfq.id} checked={rfq.isSelected} onchange={handleCheckboxChange}></lightning-input>
+                        </td>
+                        <td style="width: 10rem;"><a href="javascript:void(0);" onclick={navigateToRFQ} data-id={rfq.id}>{rfq.rfqNumber}</a></td>
+                        <td style="width: 20rem;">{rfq.name}</td>
+                        <td style="width: 15rem;">{rfq.projectName}</td>
+                        <td style="width: 10rem;"><span class={rfq.statusClass}>{rfq.status}</span></td>
+                        <td style="width: 15rem;">{rfq.tradetype}</td>
+                        <td style="width: 10rem;">{rfq.dueDate}</td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+        
+        <div class="paginationDiv slds-var-p-around_medium">
+            <div class="btnCover">
+                <div class="pagination-container">
+                    <button class="pagination-button" disabled={isFirstPage} onclick={handlePrevious}>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="52" width="52" viewBox="0 0 520 520"
+                            fill="#fff">
+                            <path d="M342 477 134 272c-6-6-6-16 0-22L342 45c6-6 16-6 22 0l22 22c6 6 6 16 0 22L221 250c-6 6-6 16 0 22l163 161c6 6 6 16 0 22l-22 22c-5 5-14 5-20 0z" />
+                        </svg>
+                        Back
+                    </button>
+
+                    <template for:each={pageNumbers} for:item="page">
+                        <template if:false={page.isEllipsis}>
+                            <button key={page.number} data-id={page.number} class={page.className}
+                                onclick={handlePageChange}>
+                                {page.number}
+                            </button>
+                        </template>
+                        <template if:true={page.isEllipsis}>
+                            <span key={page.number} class="pagination-ellipsis">...</span>
+                        </template>
+                    </template>
+
+                    <button class="pagination-button" disabled={isLastPage} onclick={handleNext}>
+                        Next
+                        <svg xmlns="http://www.w3.org/2000/svg" height="52" width="52" viewBox="0 0 520 520"
+                            fill="#fff">
+                            <path d="m179 44 207 205c6 6 6 16 0 22L179 476c-6 6-16 6-22 0l-22-22c-6-6-6-16 0-22l163-161c6-6 6-16 0-22L136 88c-6-6-6-16 0-22l22-22c6-5 15-5 21 0z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <template if:true={showPopUpModal}>
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-02" aria-modal="true"
+                aria-describedby="modal-content-id-2" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <!-- <lightning-button-icon style="border-radius: 5px; margin-top: 3px;" icon-name="utility:close" alternative-text="Close" title="Close" size="large" variant="bare-inverse"
+                            class="slds-modal__close" onclick={handleCloseModal}>
+                        </lightning-button-icon> -->
+                        <button class="slds-button slds-button_icon slds-modal__close custom-close-button" title="Close" onclick={handleCloseModal}>
+                            <lightning-icon icon-name="utility:close" alternative-text="close" size="small"
+                                class="custom-close-icon" ></lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-02" class="slds-modal__title slds-hyphenate">Email RFQs</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium scrollable-content" id="modal-content-id-2">
+                        <ul class="accordion">
+                            <template for:each={rfqList} for:item="rfqRec" for:index="index">
+                                <li key={rfqRec.id} data-selected={rfqRec.isOpen} class="accordion-item">
+                                    <div class="accordion-header">
+                                        <div class="checkbox-container">
+                                            <lightning-input type="checkbox" label="" name={rfqRec.id} checked={rfqRec.isSelected} onchange={handleSelectedPOs}></lightning-input>
+                                        </div>
+                                        <button class="accordion-toggle" data-category={rfqRec.id} data-index={index}
+                                            onclick={handleAccordionToggle}>
+                                            <div class="po-info">
+                                                <span class="po-name">{rfqRec.label}</span>
+                                                <span class="po-description truncateValue">
+                                                    <template if:true={rfqRec.status}> - {rfqRec.status}</template>
+                                                </span>
+                                            </div>
+                                            <lightning-icon icon-name={rfqRec.iconName} size="x-small" class="accordion-icon"></lightning-icon>
+                                        </button>
+                                    </div>
+                                    <div data-tablist={rfqRec.id} data-selected={rfqRec.isOpen} class="accordion-content">
+                                        <table class="popupTable">
+                                            <template if:true={rfqRec.vendors.length}>
+                                                <thead>
+                                                    <tr style="border: 1px solid #D8DDE6">
+                                                        <th style="width: 25%; overflow: hidden; text-overflow: ellipsis;">
+                                                            <div class="slds-col slds-truncate">
+                                                                <p class="truncateValue">Vendor</p>
+                                                            </div>
+                                                        </th>
+                                                        <th style="width: 30%; overflow: hidden; text-overflow: ellipsis;">
+                                                            <div class="slds-truncate">Contact</div>
+                                                        </th>
+                                                        <th style="width: 20%; overflow: hidden; text-overflow: ellipsis;">
+                                                            <div class="slds-truncate">Email</div>
+                                                        </th>
+                                                        <th style="width: 15%; overflow: hidden; text-overflow: ellipsis;">
+                                                            <div class="slds-truncate">Phone</div>
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <template for:each={rfqRec.vendors} for:item="ven" for:index="lineIndex">
+                                                        <tr key={ven.id} class={ven.rowClass}>
+                                                            <td style="width: 25%; overflow: hidden; text-overflow: ellipsis;">
+                                                                <div class="slds-col slds-truncate">
+                                                                    <template if:true={ven.buildertek__Vendor__c}>
+                                                                        <p class="truncateValue">{ven.buildertek__Vendor__r.Name}</p>
+                                                                    </template>
+                                                                </div>
+                                                            </td>
+                                                            <td style="width: 30%; overflow: hidden; text-overflow: ellipsis;">
+                                                                <div class="slds-truncate">
+                                                                    <template if:true={ven.buildertek__Contact__c}>
+                                                                        {ven.buildertek__Contact__r.Name}
+                                                                    </template>
+                                                                </div>
+                                                            </td>
+                                                            <td style="width: 20%; overflow: hidden; text-overflow: ellipsis;">
+                                                                <div class="slds-truncate">
+                                                                    <template if:true={ven.buildertek__Contact__c}>
+                                                                        <template if:true={ven.buildertek__Contact__r.Email}>
+                                                                            {ven.buildertek__Contact__r.Email}
+                                                                        </template>
+                                                                        <template if:false={ven.buildertek__Contact__r.Email}>
+                                                                            <div class="slds-grid slds-align_absolute-center">
+                                                                                <input 
+                                                                                    type="email" 
+                                                                                    placeholder="Enter Email" 
+                                                                                    class="slds-input slds-m-right_small" 
+                                                                                    data-id={ven.buildertek__Contact__r.Id} 
+                                                                                    oninput={handleEmailInput} 
+                                                                                />
+                                                                                <button 
+                                                                                    class="slds-button slds-button_icon slds-button_icon-border-filled" 
+                                                                                    onclick={handleEmailSubmit} 
+                                                                                    data-id={ven.buildertek__Contact__r.Id}
+                                                                                >
+                                                                                    <lightning-icon data-id={ven.buildertek__Contact__r.Id} icon-name="utility:send" alternative-text="Submit Email" size="xx-small"></lightning-icon>
+                                                                                </button>
+                                                                            </div>
+                                                                        </template>
+                                                                    </template>
+                                                                </div>
+                                                            </td>                                                            
+                                                            <td style="width: 15%; overflow: hidden; text-overflow: ellipsis;">
+                                                                <div class="slds-truncate">
+                                                                    <template if:true={ven.buildertek__Contact__c}>
+                                                                        {ven.buildertek__Contact__r.Phone}
+                                                                    </template>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </template>
+                                                </tbody>
+                                            </template>
+                                            <!-- Optional: Fallback for empty vendor list -->
+                                            <template if:false={rfqRec.vendors.length}>
+                                                <tr>
+                                                    <td colspan="4" class="slds-text-align_center">No PO Lines Available</td>
+                                                </tr>
+                                            </template>
+                                        </table>
+                                        
+                                    </div>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="Cancel" onclick={handleCloseModal} class="slds-m-right_x-small">
+                        </lightning-button>
+                        <lightning-button label="Send Email" variant="brand" onclick={handleSendEmail}>
+                        </lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+    </div>
+</template>

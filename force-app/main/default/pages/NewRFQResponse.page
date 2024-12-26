@@ -1,0 +1,19 @@
+<apex:page controller="RFQResponseClass">
+    <apex:includeLightning />
+    <div id="myAuraContainer"></div>
+
+    <script>
+    //var rfqVendorID = "{!RFQVendorID}";
+    //  console.log('rfqVendorID: ' + rfqVendorID);
+	console.log('componant vf page');
+        $Lightning.use("c:RFQResponseApp", function() {
+            $Lightning.createComponent("c:RFQResponseCmp",
+              {},
+              "myAuraContainer",
+              function(cmp) {
+                  console.log('Component created with rfqVendorID: ' + rfqVendorID);
+              }
+            );
+        });
+    </script>
+</apex:page>

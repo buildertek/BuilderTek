@@ -1,0 +1,74 @@
+<aura:component controller="CreateLotControllor"
+    implements="force:appHostable,flexipage:availableForRecordHome,force:lightningQuickActionWithoutHeader,flexipage:availableForAllPageTypes,lightning:actionOverride,force:hasRecordId,forceCommunity:availableForAllPageTypes"
+    access="global">
+    <lightning:workspaceAPI aura:id="workspace" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+
+    <aura:attribute name="communityRecord" type="Object"/>
+    <aura:attribute name="LotRecord" type="Object"/>
+    <aura:attribute name="isDisabled" type="Boolean" default="false"/>
+
+    <ltng:require styles="{!$Resource.MOdalPreviewWidth52}" />
+    <header class="slds-modal__header">
+        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Add Lot</h2>
+    </header>
+
+    <div class="slds-modal__content" id="modal-content-id-1">
+        <lightning:recordEditForm aura:id="recordViewForm" objectApiName="buildertek__BT_Lots__c"
+            onsubmit="{!c.handleSubmit}" density="Comfy">
+            <div class="" style="height:55vh;width:100%;overflow: auto;">
+                <div class="slds-p-around_medium" style="background-color:white;">
+
+                    <lightning:layout multipleRows="true">
+
+                        <lightning:layoutItem size="6" padding="around-small">
+                            <lightning:inputField fieldName="Name" value="{!v.communityRecord.Name}"/>
+                        </lightning:layoutItem>
+
+                        <lightning:layoutItem size="6" padding="around-small">
+                            <lightning:inputField fieldName="buildertek__Number_of_Lots__c" />
+                        </lightning:layoutItem>
+
+                        <lightning:layoutItem size="6" padding="around-small">
+                            <lightning:inputField fieldName="buildertek__Status__c" />
+                        </lightning:layoutItem>
+
+                        <lightning:layoutItem size="6" padding="around-small">
+                            <lightning:inputField fieldName="buildertek__Lot_Price__c" />
+                        </lightning:layoutItem>
+
+                        <lightning:layoutItem size="6" padding="around-small">
+                            <lightning:inputField fieldName="buildertek__BT_Community__c"  value="{!v.communityRecord.Id}" />
+                        </lightning:layoutItem>
+
+                        <lightning:layoutItem size="6" padding="around-small">
+                            <lightning:inputField fieldName="buildertek__Schedule__c" />
+                        </lightning:layoutItem>
+                        
+                        <lightning:layoutItem size="6" padding="around-small">
+                            <lightning:inputField fieldName="buildertek__Street_Address__c" />
+                        </lightning:layoutItem>
+
+                        <lightning:layoutItem size="6" padding="around-small">
+                            <lightning:inputField fieldName="buildertek__City__c" />
+                        </lightning:layoutItem>
+
+                        <lightning:layoutItem size="6" padding="around-small">
+                            <lightning:inputField fieldName="buildertek__State__c" />
+                        </lightning:layoutItem>
+
+                        <lightning:layoutItem size="6" padding="around-small">
+                            <lightning:inputField fieldName="buildertek__Zip_Code__c" />
+                        </lightning:layoutItem>
+
+                    </lightning:layout>
+                </div>
+            </div>
+            <footer aura:id="footer" class="slds-modal__footer">
+                <lightning:button variant="neutral" title="Cancel" label="Cancel" onclick="{! c.closeModel }" />
+                <lightning:button variant="brand" type="submit" name="save" label="Save" disabled="{!v.isDisabled}" />
+            </footer>
+        </lightning:recordEditForm>
+    </div>
+    <c:BT_Spinner />
+</aura:component>

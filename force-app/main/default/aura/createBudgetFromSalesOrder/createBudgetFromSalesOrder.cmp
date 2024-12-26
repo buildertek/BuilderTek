@@ -1,0 +1,39 @@
+<aura:component controller="createBudgetFromSalesOrderController" implements="flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader,lightning:actionOverride" access="global">
+	<aura:attribute name="recordId" type="Id" />
+    <lightning:workspaceAPI aura:id="workspace" />
+
+	<aura:html tag="style">
+		.slds-modal__container {
+            max-width: 52rem !important;
+            width: 52% !important;
+		}
+
+		.cuf-content {
+		    padding: 0 0rem !important;
+		}
+
+		.slds-p-around--medium {
+		    padding: 0rem !important;
+		}
+
+		.slds-modal__content {
+            height: unset !important;
+            max-height: unset !important;
+            box-shadow: none !important;
+		}
+	</aura:html>
+
+	<div class="slds-modal__header" style="font-size:17px;">
+		Create Budget
+	</div>
+	<div class="slds-modal__content slds-p-around--large">
+		<div class="slds slds-scope">
+			<center>Are you sure to create Budget related to this Sales Order ?</center>
+		</div>
+	</div>
+	<div class="slds-modal__footer">
+		<lightning:button label="Cancel" onclick="{!c.cancel}" />
+		<lightning:button variant="brand" label="Create" onclick="{!c.createBudget}" />
+	</div>
+	<c:BT_Spinner />
+</aura:component>

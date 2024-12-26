@@ -1,0 +1,16 @@
+.THIS .custom-loading-text {
+    transform: rotate(-90deg);
+    position: absolute;
+    top: -0.5rem;
+    left: 1rem;
+    white-space: nowrap;
+    font-size: 20px;
+}
+
+.THIS .padding-below{
+    padding-bottom: 9rem;
+}
+
+.THIS .hideLabel .slds-form-element__label{
+    display: none !important;
+}

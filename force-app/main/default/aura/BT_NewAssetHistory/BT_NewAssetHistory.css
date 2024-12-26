@@ -1,0 +1,16 @@
+.THIS .WarningMessage {
+    padding: 10px;
+    font-size: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: white;
+}
+
+.THIS .truncateText {
+    width: 200px;
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

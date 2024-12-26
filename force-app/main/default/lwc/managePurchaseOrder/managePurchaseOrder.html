@@ -1,0 +1,35 @@
+<template>
+    <div class="manage-po-container">
+        <div class="header">
+            <h1>Manage Purchase Order</h1>
+        </div>
+        <div class="tabs-container">
+            <div class="tabs">
+                <button class="tab-button active" data-id="view-po" onclick={switchTab}>View PO</button>
+                <button class="tab-button" data-id="manage-po" onclick={switchTab}>Update PO Pricing</button>
+                <button class="tab-button" data-id="mass-void-po" onclick={switchTab}>Mass Void PO</button>
+                <button class="tab-button" data-id="email-po" onclick={switchTab}>Email PO</button>
+            </div>
+            <template if:true={showPOManage}>
+                <div class="tab-content" id="manage-po">
+                    <c-mass-manage-p-os></c-mass-manage-p-os>
+                </div>
+            </template> 
+            <template if:true={showMassVoidPOs}>
+                <div class="tab-content" id="mass-void-po">
+                    <c-mass-void-p-os></c-mass-void-p-os>
+                </div>
+            </template>
+            <template if:true={showEmailPOs}>
+                <div class="tab-content" id="email-po">
+                    <c-mass-email-p-os></c-mass-email-p-os>
+                </div>
+            </template>
+            <template if:true={viewPO}>
+                <div class="tab-content" id="view-po">
+                    <c-view-p-os></c-view-p-os>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

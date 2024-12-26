@@ -1,0 +1,48 @@
+<aura:component
+    implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader"
+    access="global"
+    controller="Preview_Checklist_Answer_Controller">
+    
+    <aura:html tag="style">
+        .slds-modal__close{ display:block !important; }
+
+        .slds-modal__content {
+            overflow: hidden !important;
+            height: unset !important;
+            max-height: unset !important;
+        }
+
+        .slds-modal__content .slds-p-around--medium{
+            padding: 0 !important;
+        }
+        
+        .slds-modal__container {
+            width:80% !important;
+            max-width: 60rem !important;
+            width: 70% !important;
+            overflow: hidden !important;
+        }
+
+        .cuf-content {
+            padding: 0 0rem !important;
+        }
+
+    </aura:html>
+
+    <aura:handler event="c:customActionEvent" action="{!c.closeModel}" />
+
+
+    <div style="max-height:200px;">
+        <div>
+            <center>
+                <img alt="Creating new Quote." src="{!$Resource.gearsloading}" style="height:150px !important;"/>
+                <br/>
+                Generating new PDF <br/> Please don't leave this page until PDF is created.
+            </center> 
+        </div>
+        <div style="visibility: hidden;">
+            <c:preview_Checklist_Answer_Lwc oncloseaction="{!c.closeModel}" checkListResId="{!v.recordId}" />
+        </div>
+    </div>
+
+</aura:component>

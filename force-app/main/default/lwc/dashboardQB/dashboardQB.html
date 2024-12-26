@@ -1,0 +1,58 @@
+<template>
+
+    <template if:true={isLoading}>
+        <lightning-spinner class="spinner__1" alternative-text="Loading" size="large"></lightning-spinner>
+    </template>
+
+    <template if:false={noData}>
+        <div class="slds-card">
+           <div class="slds-card__header slds-grid">
+               <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                   <div class="slds-media__body">
+                       <h2 class="slds-card__header-title">
+                           <span>QuickBooks Dashboard</span>
+                       </h2>
+                   </div>
+               </header>
+               <div class="slds-no-flex">
+                   <lightning-button-icon icon-name="utility:refresh" alternative-text="Refresh" onclick={getrecordDetails}></lightning-button-icon>
+               </div>
+           </div>
+   
+           <div class="slds-card__body slds-card__body_inner">
+   
+               <template if:true={isSynced}>
+                   <h2>Synced Successful with QuickBooks</h2>
+                   <br>
+                   <div class="button-row">
+                       <lightning-button label="ReSync with QB" variant="neutral" class="button" onclick={handleReSync}></lightning-button>
+                       <lightning-button label="View in QB" variant="brand" class="button" onclick={handleRedirect}></lightning-button>
+                       <lightning-button label="DeLink from QB" variant="destructive" class="button" onclick={handleDeLink}></lightning-button>
+                   </div>
+               </template>
+               <template if:false={isSynced}>
+                   <template if:true={hasError}>
+                       <h2>Error occurred while syncing with QuickBooks</h2>
+                       <p>{messagefromQB}</p>
+                       <br>
+                       <div class="button-row">
+                            <lightning-button label="Contact for Help" variant="neutral" class="button" onclick={handlesendEmail}></lightning-button>
+                           <lightning-button label="Retry Sync" variant="brand" class="button" onclick={handleReSync}></lightning-button>
+                           <lightning-button label="DeLink from QB" variant="destructive" class="button" onclick={handleDeLink}></lightning-button>
+                       </div>
+                   </template>
+                   <template if:false={hasError}>
+                       <h2>Not yet synced with QuickBooks</h2>
+                       <br>
+                       <div class="button-row">
+                           <lightning-button label="Sync with QB" variant="brand" class="button" onclick={handleReSync}></lightning-button>
+                       </div>
+                   </template>
+               </template>
+               
+           </div>
+       </div>
+    </template>
+
+    
+</template>

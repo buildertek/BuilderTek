@@ -1,0 +1,385 @@
+/* General styles */
+.mass-void-pos-container {
+    position: relative;
+    font-family: Arial, sans-serif;
+    padding: 1rem;
+}
+
+.search-and-button {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.search-container {
+    flex-grow: 1;
+    margin-right: 1rem;
+}
+
+.slds-input {
+    border-radius: 4px;
+}
+
+/* Table styles */
+.slds-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: none;
+    border-radius: 8px;
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.slds-table th {
+    background-color: rgb(6, 120, 255, 33);
+    color: #fff;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 0.75rem 1rem;
+    border: none;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    height: 2rem;
+}
+
+.slds-table td {
+    padding: 0.75rem 1rem;
+    border: none;
+    font-size: 0.875rem;
+    vertical-align: middle;
+}
+
+.slds-table tr {
+    border-bottom: 1px solid #e0e0e0;
+    transition: background-color 0.2s ease;
+}
+
+.slds-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.slds-table tr:last-child {
+    border-bottom: none;
+}
+
+.slds-table tbody tr:nth-child(even) {
+    background-color: #f9fafb;
+}
+
+.slds-table input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #d8dde6;
+    border-radius: 3px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    vertical-align: middle;
+    transition: all 0.2s ease;
+}
+
+.slds-table input[type="checkbox"]:checked {
+    background-color: #0070d2;
+    border-color: #0070d2;
+    position: relative;
+}
+
+.slds-table input[type="checkbox"]:checked::after {
+    content: '\2714';
+    font-size: 14px;
+    color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Status pill styles */
+.status-pill {
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.status-open {
+    background-color: #4bca81;
+}
+
+.status-ordered {
+    background-color: #f5bc25;
+}
+
+/* Utility classes */
+.slds-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Pagination styles */
+.pagination-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.pagination-button {
+    background-color: #ffffff;
+    border: 1px solid #d8d8d8;
+    color: #333;
+    padding: 6px 12px;
+    margin: 0 2px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    border-radius: 0.3rem;
+    font-size: 12px;
+}
+
+.pagination-button svg {
+    fill: black;
+    width: 0.7rem;
+    height: 0.7rem;
+}
+
+.pagination-button:hover {
+    background-color: #f0f0f0;
+}
+
+.pagination-button.active {
+    background-color: #0070d2;
+    color: white;
+    border-color: #0070d2;
+}
+
+.pagination-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-button:first-child,
+.pagination-button:last-child {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.results-info {
+    margin-left: 15px;
+    color: #666;
+}
+
+.results-per-page {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+}
+
+.results-per-page label {
+    margin-right: 8px;
+    color: #666;
+}
+
+.results-per-page select {
+    padding: 4px 8px;
+    border: 1px solid #d8d8d8;
+    border-radius: 3px;
+}
+
+/* Modal styles */
+.slds-modal__container {
+    margin: 0 auto;
+    width: 90%;
+    max-width: 70rem;
+    min-width: 20rem;
+}
+
+.slds-modal__header {
+    background-color: #0070D2;
+    color: white;
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0.25rem;
+}
+
+.slds-modal__title {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.slds-modal__content {
+    padding: 1rem;
+}
+
+.slds-modal__close svg {
+    fill: #fff !important;
+    margin-top: 3px !important;
+}
+
+/* Spinner styles */
+.spinner-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.7);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Accordion styles */
+.accordion {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.accordion-item {
+    border: 1px solid #D8DDE6;
+    border-radius: 0.25rem;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.accordion-item:hover {
+    box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+}
+
+.accordion-header {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+}
+
+.accordion-header lightning-input {
+    margin-right: 0.5rem;
+}
+
+.accordion-toggle {
+    background: white;
+    width: 100%;
+    text-align: left;
+    border: none;
+    font-size: 1rem;
+    padding: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    color: #16325C;
+    flex: 1;
+    overflow: hidden;
+}
+
+.accordion-icon {
+    transition: transform 0.3s ease;
+    flex: 0 0 auto;
+    margin-left: 10px;
+}
+
+.accordion-item[data-selected="true"] .accordion-icon {
+    transform: rotate(0deg);
+}
+
+.accordion-content {
+    padding: 0;
+    overflow: hidden;
+    max-height: 0;
+    /* transition: max-height 0.3s ease-out; */
+}
+
+.accordion-content[data-selected="true"] {
+    max-height: 1000rem;
+    transition: max-height 0.5s ease-in;
+    margin-bottom: 1rem;
+}
+
+/* Popup table styles */
+.popupTable {
+    width: 97%;
+    margin: 0 auto;
+    border-collapse: collapse;
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+.popupTable thead tr th {
+    background-color: rgba(6, 120, 255, 0.2);
+    color: #16325C;
+    font-weight: bold;
+    padding: 0.5rem;
+    text-align: left;
+}
+
+.popupTable tbody tr td {
+    padding: 0.5rem;
+    border: 1px solid #D8DDE6;
+    border-radius: 0.25rem;
+}
+
+/* Button styles */
+.slds-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 0.25rem;
+}
+
+.slds-button_brand {
+    background-color: #0070D2;
+    color: white;
+}
+
+.slds-button_neutral {
+    background-color: white;
+    color: #0070D2;
+    border: 1px solid #0070D2;
+}
+
+/* Utility classes */
+.scrollable-content {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.red-text {
+    color: #C23934;
+}
+
+.truncateValue{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.checkbox-container {
+    flex: 0 0 auto;
+}
+
+.po-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.po-name {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.po-description {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-left: 5px;
+}

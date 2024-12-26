@@ -1,0 +1,33 @@
+<aura:component
+    implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickActionWithoutHeader"
+    access="global" controller="BT_SyncPOsOnScheduleController">
+
+    <aura:attribute name="newScheduleItemList" type="Project_Task__c[]" />
+    <aura:attribute name="newPOList" type="Purchase_Order__c[]" />
+    <aura:attribute name="showModal" type="Boolean" default="false" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <c:BT_Spinner />
+
+    <ltng:require styles="{!$Resource.MOdalPreviewWidth72}" />
+
+    <aura:if isTrue="{!v.showModal}">
+        <ltng:require styles="{!$Resource.MOdalPreviewWidth72}" />
+        <div class="slds-modal__header" style="font-size:17px;font-weight:bold">
+            Sync PO's
+        </div>
+
+        <div style="height: auto;" class="container fontStyle">
+            <p>
+                Are you sure you want to sync the Schedule Items to these Purchase Order?
+                <br/>
+                When syncing PO's to a Schedule item, we match the Vendor, Category and Cost Code to ensure that there is an accurate match between the Purchase Order and the Schedule Item.
+            </p> 
+        </div>
+
+        <div class="slds-modal__footer">
+            <ui:button class="slds-button slds-button_brand" label="Yes" press="{!c.processOperation}" />
+            <button class="slds-button slds-button--neutral" onclick="{!c.closeModelCon}">No</button>
+        </div>
+    </aura:if>
+
+</aura:component>

@@ -1,0 +1,76 @@
+<aura:component controller="createPOFromSalesOrderController"
+    implements="flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader,lightning:actionOverride"
+    access="global">
+
+    <aura:attribute name="showmodal" type="Boolean" default="true" />
+    <aura:attribute name="salesOrderLines" type="List" />
+    <aura:attribute name="columns" type="List" />
+    <aura:attribute name="selectedRows" type="List" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="isLoading" type="Boolean" default="false" />
+    <lightning:workspaceAPI aura:id="workspace" />
+
+    <aura:html tag="style">
+        .slds-modal__container {
+        max-width: 52rem !important;
+        width: 52% !important;
+        }
+
+        .cuf-content {
+        padding: 0 0rem !important;
+        }
+
+        .slds-p-around--medium {
+        padding: 0rem !important;
+        }
+
+        .slds-modal__content {
+        height: unset !important;
+        max-height: unset !important;
+        box-shadow: none !important;
+        }
+
+        .slds-table_header-fixed_container.slds-scrollable_x::-webkit-scrollbar {
+        display: none;
+        }
+        .slds-table_header-fixed_container.slds-scrollable_x {
+        scrollbar-width: none;
+        }
+
+        .scrollable {
+        height: 400px;
+        overflow-y: auto;
+        }
+    </aura:html>
+
+    <aura:if isTrue="{!v.showmodal}">
+        <div class="slds-modal__header">
+            <h2 class="slds-text-heading_medium">Select Sales Order Lines</h2>
+        </div>
+        <div class="slds-scrollable" style="width:100%; max-height: 55vh; overflow: auto;">
+            <div class="slds-modal__content slds-p-horizontal_small">
+                <lightning:datatable keyField="Id" data="{!v.salesOrderLines}" columns="{!v.columns}"
+                    hideCheckboxColumn="false" onrowselection="{!c.handleRowSelection}" style="width: 100%;" />
+            </div>
+        </div>
+
+        <div class="slds-modal__footer">
+            <lightning:button variant="neutral" label="Cancel" onclick="{!c.closeModel}" />
+            <lightning:button variant="brand" label="Create Purchase Order" onclick="{!c.saveModel}" />
+        </div>
+    </aura:if>
+
+    <aura:if isTrue="{!v.isLoading}">
+        <div aura:id="spinnerId" class="slds-spinner_container" style="position:fixed;">
+            <div class="slds-spinner--brand slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+                <div class="custom-loading-text">
+                    <b>Processing, Please Wait</b>
+                </div>
+            </div>
+        </div>
+    </aura:if>
+
+</aura:component>

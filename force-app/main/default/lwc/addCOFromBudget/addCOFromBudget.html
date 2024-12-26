@@ -1,0 +1,74 @@
+<template>
+    <template if:true={isLoading}>
+        <div class="spinner-container">
+            <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+        </div>
+    </template>
+
+    <!-- Change Orders Modal -->
+    <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+            aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+        <div class="slds-modal__container slds-modal__container_custom" style="width: 70%;">
+            <header class="slds-modal__header">
+                <button class="slds-button slds-button_icon slds-modal__close custom-close-button" title="Close" onclick={closeAddCO}>
+                    <lightning-icon icon-name="utility:close" alternative-text="close" size="small" class="custom-close-icon"></lightning-icon>
+                    <span class="slds-assistive-text">Close</span>
+                </button>
+                <h2 class="slds-text-heading_medium slds-hyphenate">Change Orders</h2>
+            </header>
+
+            <div class="slds-modal__content slds-p-around_none content-scrollable">
+                <table class="slds-table slds-table_bordered slds-table_cell-buffer custom-table">
+                    <thead class="sticky-header">
+                        <tr>
+                            <th scope="col" class="checkbox-column">
+                                <lightning-input type="checkbox" name="checkAll" onchange={checkAllChangeOrder} checked={allSelected}></lightning-input>
+                            </th>
+                            <th scope="col">CO#</th>
+                            <th scope="col">CO Name</th>
+                            <th scope="col">Status</th>
+                            <!-- <th scope="col">CO Total Cost</th> -->
+                            <th scope="col">Total Sales Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template if:true={coRecordList}>
+                            <template for:each={coRecordList} for:item="item">
+                                <tr key={item.Id}>
+                                    <td>
+                                        <lightning-input type="checkbox" checked={item.Selected} data-id={item.Id} onchange={checkChangeOrder}></lightning-input>
+                                    </td>
+                                    <td class="truncate">{item.buildertek__CO_Number__c}</td>
+                                    <td class="truncate">{item.Name}</td>
+                                    <td class="truncate">{item.buildertek__Status__c}</td>
+                                    <!-- <td>
+                                        <lightning-formatted-number value={item.buildertek__Total_Costs__c}
+                                            format-style="currency" currency-code={currencycode} currency-display-as="code">
+                                        </lightning-formatted-number>
+                                    </td> -->
+                                    <td>
+                                        <lightning-formatted-number value={item.buildertek__Total_Amount_Tax__c}
+                                            format-style="currency" currency-code={currencycode} currency-display-as="code">
+                                        </lightning-formatted-number>
+                                    </td>
+                                </tr>
+                            </template>
+                        </template>
+                        <template if:false={coRecordList}>
+                            <tr>
+                                <td colspan="5" class="slds-text-align_center slds-text-color_error">No Records Found</td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+
+            <footer class="slds-modal__footer">
+                <lightning-button class="slds-m-right_small" variant="neutral" label="Cancel" onclick={closeAddCO}></lightning-button>
+                <lightning-button variant="brand" label="Save" onclick={UpdateCO}></lightning-button>
+            </footer>
+        </div>
+    </section>
+
+    <div class="slds-backdrop slds-backdrop_open"></div>
+</template>

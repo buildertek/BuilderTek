@@ -1,0 +1,4 @@
+<!-- PricebookSelectedApplicationEvent.evt -->
+<aura:event type="APPLICATION">
+    <aura:attribute name="pricebook" type="Pricebook2"/>
+</aura:event>
